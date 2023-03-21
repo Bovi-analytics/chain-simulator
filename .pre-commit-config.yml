@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/psf/black
+    # Black, to enforce PEP 8 code style.
+    rev: 23.1.0
+    hooks:
+      - id: black
+        language_version: python3.10
+  - repo: https://github.com/PyCQA/docformatter
+    # Docformatter, to make sure the documentation is always formatted correctly.
+    rev: v1.5.0
+    hooks:
+      - id: docformatter
+        args: [ --in-place --config ./pyproject.toml ]
+        language_version: python3.10
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    # Ruff, to check for code smells and code quality.
+    rev: v0.0.257
+    hooks:
+      - id: ruff
