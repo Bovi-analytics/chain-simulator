@@ -15,9 +15,8 @@ already installed. To start contributing to this package, do the following:
 2. Move into the cloned repository: `cd chain_simulator`
 3. Create a new Python virtual environment: `python3 -m venv ./venv`
 4. Activate the virtual environment: `source ./venv/bin/activate`
-5. Update pip: `python -m pip install -U pip`
-6. Install development dependencies: `pip install -r requirements.txt`
-7. Install the package in development-mode: `pip install -e .`
+5. Update pip and build: `python -m pip install -U pip build`
+6. Install the package in development-mode: `pip install -e '.[dev]'`
 
 You should now be set for contributing to the simulation platform.
 
@@ -39,7 +38,6 @@ tests = "Unit tests to test the simulation platform"
 ".pre-commit-config.yml" = "Tasks to execute on each commit"
 "pyproject.toml" = "Configurations for the build system, linters, type checkers and testing frameworks"
 "README.md" = "Description of this repository"
-"requirements.txt" = "Packages needed for development of the simulation platform"
 "setup.cfg" = "Metadata and settings/requirements for building the package"
 ```
 
