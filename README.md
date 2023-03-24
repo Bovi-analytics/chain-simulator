@@ -1,5 +1,5 @@
-DigitalCowSimulationPlatform
-============================
+Chain simulator
+===============
 
 These are the humble beginnings of a generic and highly scalable platform 
 for simulating digital twins using Markov chains.
@@ -9,16 +9,24 @@ for simulating digital twins using Markov chains.
 # Contributing
 The package is written in [Python](https://www.python.org/), specifically for 
 Python 3.10 and newer. It is assumed that a supported Python interpreter is 
-already installed. To start contributing to this package, do the following:
+already installed. Dependency management is done using [Poetry](https://python-poetry.org/), 
+make sure this tool is installed too. To set up your development environment, 
+do the following:
 
-1. Clone this Git-repository: `git clone https://github.com/Bovi-analytics/DigitalCowSimulationPlatform.git chain_simulator`
-2. Move into the cloned repository: `cd chain_simulator`
-3. Create a new Python virtual environment: `python3 -m venv ./venv`
-4. Activate the virtual environment: `source ./venv/bin/activate`
-5. Update pip and build: `python -m pip install -U pip build`
-6. Install the package in development-mode: `pip install -e '.[dev]'`
+1. Clone the chain-simulator repository to your computer:
+    ```shell
+    git clone https://github.com/Bovi-analytics/DigitalCowSimulationPlatform.git chain_simulator
+    ```
+2. Move into the new folder named chain_simulator:
+    ```shell
+    cd chain_simulator
+    ```
+3. Install all package dependencies in a virtual environment:
+    ```shell
+    poetry install
+    ```
 
-You should now be set for contributing to the simulation platform.
+You should now be set up for contributing to the simulation platform!
 
 
 
@@ -38,7 +46,6 @@ tests = "Unit tests to test the simulation platform"
 ".pre-commit-config.yml" = "Tasks to execute on each commit"
 "pyproject.toml" = "Configurations for the build system, linters, type checkers and testing frameworks"
 "README.md" = "Description of this repository"
-"setup.cfg" = "Metadata and settings/requirements for building the package"
 ```
 
 

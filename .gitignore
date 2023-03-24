@@ -742,3 +742,6 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,pycharm+all,visualstudio,visualstudiocode,python
+
+# Lock-file for poetry dependency management - not needed as this is a library.
+poetry.lock

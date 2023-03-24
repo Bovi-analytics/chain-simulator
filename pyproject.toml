@@ -1,13 +1,48 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+name = "chain-simulator"
+version = "1.0.0"
+description = "Generic, highly scalable platform for simulating digital twins using Markov chains."
+authors = ["Max Nollet <mjh.nollet@student.han.nl>"]
+readme = "README.md"
+repository = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
+packages = [{ include = "chain_simulator", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.0"
+docformatter = "^1.5"
+mypy = "^1.1"
+pylint = "^2.17"
+pre-commit = "^3.2"
+ruff = "^0.0.259"
+
+[tool.poetry.group.docs.dependencies]
+furo = "^2023.0"
+Sphinx = "^6.1"
+
+[tool.poetry.group.security.dependencies]
+bandit = "^1.7"
+safety = "^2.3"
+
+[tool.poetry.group.tests.dependencies]
+pytest = "^7.0"
+
 
 [tool.black]
 line-length = 79
 target-version = ["py310"]
 
+
 [tool.mypy]
-strict=true
+strict = true
+
 
 [tool.pylint.MASTER]
 load-plugins = [
@@ -38,6 +73,7 @@ accept-no-raise-doc = false
 accept-no-return-doc = false
 accept-no-yields-doc = false
 default-docstring-type = "sphinx"
+
 
 [tool.ruff]
 extend-select = [
