@@ -13,15 +13,17 @@ repository = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
 packages = [{ include = "chain_simulator", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.12"
+scipy = ">=1.10"
+typing-extensions = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.0"
-docformatter = "^1.5"
-mypy = "^1.1"
-pylint = "^2.17"
-pre-commit = "^3.2"
-ruff = "^0.0.259"
+black = ">=23.0"
+docformatter = ">=1.5"
+mypy = ">=1.1"
+pylint = ">=2.17"
+pre-commit = ">=3.2"
+ruff = ">=0.0.259"
 
 [tool.poetry.group.docs.dependencies]
 furo = "^2023.0"
@@ -33,6 +35,7 @@ safety = "^2.3"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.0"
+numpy = "^1.24.2"
 
 
 [tool.black]

@@ -18,3 +18,11 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+testdoc
+=======
+
+.. autoclass:: chain_simulator.abstract.AbstractDigitalTwinFacade
+   :members:
+   :special-members: __init__
