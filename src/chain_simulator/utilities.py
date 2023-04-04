@@ -4,12 +4,16 @@ Module with small helper function for i.e. validating transition
 matrices. These functions are written to help perform common tasks when
 working with this package.
 """
-
+import logging
 from typing import TypeVar
 
-from scipy.sparse import csc_array, csr_array
+import numpy as np
+from scipy.sparse import csr_array
 
-_T = TypeVar("_T", csr_array, csc_array)
+_T = TypeVar("_T", np.array, csr_array)
+
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
 
 
 def validate_matrix_sum(transition_matrix: _T) -> bool:
@@ -50,4 +54,17 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     :return: whether all numbers in the transition matrix are positive.
     :rtype: bool
     """
-    return not transition_matrix[transition_matrix < 0].size
+    values = transition_matrix < 0
+    is_valid = values.size == 0
+    if not is_valid:
+        if _logger.isEnabledFor(logging.WARNING):
+            indices = np.argwhere(values == 1)
+            for index, value in zip(indices, transition_matrix[values]):
+                _logger.warning(
+                    "Probability %d with index %s is negative!", value, index
+                )
+    else:
+        _logger.info(
+            "Transition matrix is valid (all probabilities are positive)."
+        )
+    return is_valid
