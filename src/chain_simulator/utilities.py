@@ -33,8 +33,24 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
     :return: whether the sum of all rows in the transition matrix equal to 1.
     :rtype: bool
     """
+    _logger.debug(
+        "Validating sums of rows of transition matrix %s.",
+        transition_matrix.shape,
+    )
     sum_rows = transition_matrix.sum(1)
-    return (len(sum_rows) / sum_rows.sum()) == 1  # type: ignore[no-any-return]
+    is_valid: bool = (len(sum_rows) / sum_rows.sum()) == 1
+    if not is_valid:
+        if _logger.isEnabledFor(logging.WARNING):
+            for index, sum_row in enumerate(sum_rows):
+                if sum_row != 1:
+                    _logger.warning(
+                        "Row %d sums to %d instead of 1!",
+                        index,
+                        sum_row,
+                    )
+    else:
+        _logger.info("Transition matrix is valid (all rows sum to 1).")
+    return is_valid
 
 
 def validate_matrix_positive(transition_matrix: _T) -> bool:
@@ -54,11 +70,15 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     :return: whether all numbers in the transition matrix are positive.
     :rtype: bool
     """
+    _logger.debug(
+        "Validating probability signs of transition matrix %s.",
+        transition_matrix.shape,
+    )
     values = transition_matrix < 0
     is_valid = values.size == 0
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
-            indices = np.argwhere(values == 1)
+            indices = np.argwhere(values is True)
             for index, value in zip(indices, transition_matrix[values]):
                 _logger.warning(
                     "Probability %d with index %s is negative!", value, index
