@@ -1,5 +1,5 @@
 """Tests for module :mod:`~chain_simulator.utilities.`."""
-
+import numpy as np
 from scipy.sparse import csr_array
 from typing_extensions import Self
 
@@ -28,6 +28,11 @@ class TestTransitionMatrixSum:
         array = csr_array([[-1, 1, 0], [1, 0, -1], [0, -1, 1]])
         assert not validate_matrix_sum(array)
 
+    def test_numpy_array(self: Self) -> None:
+        """Test when all rows sum to exactly one but with negative numbers."""
+        array = np.array([[-1, 1, 0], [1, 0, -1], [0, -1, 1]])
+        assert not validate_matrix_sum(array)
+
 
 class TestTransitionMatrixPositive:
     """Tests for :func:`~chain_simulator.utilities.validate_matrix_positive`."""
@@ -45,4 +50,8 @@ class TestTransitionMatrixPositive:
     def test_three_negative(self: Self) -> None:
         """Test when three rows all contain negative numbers."""
         array = csr_array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
+        assert not validate_matrix_positive(array)
+
+    def test_numpy_array(self):
+        array = np.array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
         assert not validate_matrix_positive(array)
