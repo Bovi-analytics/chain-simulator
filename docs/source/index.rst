@@ -7,10 +7,10 @@ Welcome to Chain simulator's documentation!
 ===========================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
+   api
 
+hallo world!
 
 Indices and tables
 ==================
