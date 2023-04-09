@@ -45,6 +45,9 @@ target-version = ["py310"]
 
 [tool.mypy]
 strict = true
+plugins = [
+    "numpy.typing.mypy_plugin"
+]
 
 
 [tool.pylint.MASTER]
