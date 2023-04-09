@@ -66,6 +66,4 @@ class TestChainSimulator:
             [0.000, 0.000, 1.000]
         ])
         comparison = result == expected
-        # print(result.toarray())
-        print(type(expected.sum(1)))
         assert len(comparison.data) == 9
