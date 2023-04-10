@@ -1,41 +1,87 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-
-[tool.poetry]
+[project]
 name = "chain-simulator"
-version = "1.1.0"
+dynamic = ["version"]
 description = "Generic, highly scalable platform for simulating digital twins using Markov chains."
-authors = ["Max Nollet <mjh.nollet@student.han.nl>"]
 readme = "README.md"
-repository = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
-packages = [{ include = "chain_simulator", from = "src" }]
+requires-python = ">=3.10"
+keywords = []
+authors = [
+    { name = "Max Nollet", email = "mjh.nollet@student.han.nl" },
+]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+dependencies = [
+    "scipy>=1.10",
+    "typing-extensions>=4.0.1"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-scipy = ">=1.10"
-typing-extensions = "^4.5.0"
+[project.urls]
+Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
+Source = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
 
-[tool.poetry.group.dev.dependencies]
-black = ">=23.0"
-docformatter = ">=1.5"
-mypy = ">=1.1"
-pylint = ">=2.17"
-pre-commit = ">=3.2"
-ruff = ">=0.0.259"
+[tool.hatch.version]
+path = "src/chain_simulator/__about__.py"
 
-[tool.poetry.group.docs.dependencies]
-furo = "^2023.0"
-Sphinx = "^6.1"
+[tool.hatch.envs.default]
+dependencies = [
+    "coverage[toml]>=6.5",
+    "pytest",
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+    "- coverage combine",
+    "coverage report",
+]
+cov = [
+    "test-cov",
+    "cov-report",
+]
 
-[tool.poetry.group.security.dependencies]
-bandit = "^1.7"
-safety = "^2.3"
+[[tool.hatch.envs.all.matrix]]
+python = ["3.10", "3.11"]
 
-[tool.poetry.group.tests.dependencies]
-pytest = "^7.0"
-numpy = "^1.24.2"
+[tool.hatch.envs.lint]
+dependencies = [
+    "black>=23.1.0",
+    "docformatter>=1.5",
+    "mypy>=1.0.0",
+    "pylint>=2.17",
+    "ruff>=0.0.243",
+]
+[tool.hatch.envs.lint.scripts]
+typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
+style = [
+    "ruff {args:.}",
+    "pylint {args:.}",
+]
+fmt = [
+    "black {args:.}",
+    "ruff --fix --ignore S101 {args:.}",
+    "docformatter --in-place --recursive {args:src/chain_simulator tests}",
+    "style",
+]
+all = [
+    "style",
+    "typing",
+]
+
+[tool.hatch.envs.docs]
+dependencies = [
+    "furo>=2023.0",
+    "Sphinx>=6.1"
+]
+[tool.hatch.envs.docs.scripts]
+build = "sphinx-build -b html docs/source/ docs/build/html"
 
 
 [tool.black]
@@ -48,6 +94,9 @@ strict = true
 plugins = [
     "numpy.typing.mypy_plugin"
 ]
+[[tool.mypy.overrides]]
+module = "scipy.sparse.*"
+ignore_missing_imports = true
 
 
 [tool.pylint.MASTER]
