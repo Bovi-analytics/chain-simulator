@@ -78,10 +78,19 @@ all = [
 [tool.hatch.envs.docs]
 dependencies = [
     "furo>=2023.0",
-    "Sphinx>=6.1"
+    "Sphinx>=6.1",
+    "sphinx-copybutton>=0.5.1",
+    "sphinx-autobuild>=2021.3.14"
 ]
 [tool.hatch.envs.docs.scripts]
-build = "sphinx-build -b html docs/source/ docs/build/html"
+api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
+build = [
+    "api",
+    "test",
+    "sphinx-build -b html docs/source/ docs/build/html"
+]
+test = "sphinx-build -b doctest docs/source/ docs/build/html"
+autobuild = "sphinx-autobuild docs/source/ docs/build/html"
 
 
 [tool.black]
