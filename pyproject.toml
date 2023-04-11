@@ -61,18 +61,17 @@ dependencies = [
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
 style = [
-    "ruff {args:.}",
-    "pylint {args:.}",
+    "ruff {args:src/chain_simulator tests}",
+    "pylint {args:src/chain_simulator tests}",
 ]
 fmt = [
     "black {args:.}",
-    "ruff --fix --ignore S101 {args:.}",
     "docformatter --in-place --recursive {args:src/chain_simulator tests}",
-    "style",
+    "ruff --fix {args:src/chain_simulator tests}",
 ]
 all = [
-    "style",
     "typing",
+    "style",
 ]
 
 [tool.hatch.envs.docs]
@@ -100,6 +99,7 @@ ignore_missing_imports = true
 
 
 [tool.pylint.MASTER]
+disable = ["wrong-import-order"]
 load-plugins = [
     "pylint.extensions.broad_try_clause",
     "pylint.extensions.code_style",
@@ -161,6 +161,10 @@ extend-select = [
 line-length = 79
 show-fixes = true
 target-version = "py310"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"test_*.py" = ["S101"]
 
 
 [tool.bandit]
