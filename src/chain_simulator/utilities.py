@@ -84,11 +84,11 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
         case _:
             raise TypeError(
                 "Cannot validate transition matrix with type %s",
-                type(transition_matrix)
+                type(transition_matrix),
             )
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
-            indices = np.argwhere(negative== 1)
+            indices = np.argwhere(negative == 1)
             for index, value in zip(indices, transition_matrix[negative]):
                 _logger.warning(
                     "Probability %d with index %s is negative!", value, index

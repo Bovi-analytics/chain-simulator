@@ -5,7 +5,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import Self
 
-from benchmarks.abstract import AbstractArrayInfo, _T, csv_writer
+from benchmarks.abstract import _T, AbstractArrayInfo, csv_writer
 
 
 class ArrayInfo(AbstractArrayInfo[npt.NDArray[Any]]):

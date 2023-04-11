@@ -1,12 +1,11 @@
 """Tests for module :mod:`~chain_simulator.utilities.`."""
 import numpy as np
-from scipy.sparse import csr_array
-from typing_extensions import Self
-
 from chain_simulator.utilities import (
     validate_matrix_positive,
     validate_matrix_sum,
 )
+from scipy.sparse import csr_array
+from typing_extensions import Self
 
 
 class TestTransitionMatrixSum:

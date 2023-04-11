@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from decimal import Decimal
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from typing_extensions import Self
 

@@ -1,11 +1,10 @@
 import csv
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, TypeVar, Generic, Iterable
+from typing import Any, Generic, Iterable, TypeVar
 
 import numpy as np
 from typing_extensions import Self
-
 
 _T = TypeVar("_T")
 

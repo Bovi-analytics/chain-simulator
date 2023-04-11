@@ -37,7 +37,7 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
 
     @classmethod
     def state_combinations(
-            cls, states: tuple[str, ...]
+        cls, states: tuple[str, ...]
     ) -> Generator[tuple[str, str], None, None]:
         yield from product(states, repeat=2)
 
@@ -49,6 +49,6 @@ def chain_simulator(array: _T, steps: int) -> _T:
     if steps == 1:
         return array @ array
     new_array = array
-    for step in range(steps):
+    for _step in range(steps):
         new_array = array @ new_array
     return new_array

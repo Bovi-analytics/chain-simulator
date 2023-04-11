@@ -1,6 +1,5 @@
-from scipy.sparse import csr_array
-
 from chain_simulator.implementations import ScipyCSRAssembler, chain_simulator
+from scipy.sparse import csr_array
 
 
 class TestScipyCSRAssembler:
@@ -29,41 +28,29 @@ class TestScipyCSRAssembler:
     def test_states_to_index(self):
         states = ("A", "B", "C")
         index = ScipyCSRAssembler.states_to_index(states)
-        expected = {
-            "A": 0,
-            "B": 1,
-            "C": 2
-        }
+        expected = {"A": 0, "B": 1, "C": 2}
         assert index == expected
 
 
 class TestChainSimulator:
     def test_matmul_1(self):
-        array = csr_array([
-            [0.0, 1.0, 0.0],
-            [0.0, 0.5, 0.5],
-            [0.0, 0.0, 1.0]
-        ])
+        array = csr_array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
         result = chain_simulator(array, 1)
-        expected = csr_array([
-            [0.00, 0.50, 0.50],
-            [0.00, 0.25, 0.75],
-            [0.00, 0.00, 1.00]
-        ])
+        expected = csr_array(
+            [[0.00, 0.50, 0.50], [0.00, 0.25, 0.75], [0.00, 0.00, 1.00]]
+        )
         comparison = result == expected
         assert len(comparison.data) == 9
 
     def test_matmul_2(self):
-        array = csr_array([
-            [0.0, 1.0, 0.0],
-            [0.0, 0.5, 0.5],
-            [0.0, 0.0, 1.0]
-        ])
+        array = csr_array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
         result = chain_simulator(array, 2)
-        expected = csr_array([
-            [0.000, 0.250, 0.750],
-            [0.000, 0.125, 0.875],
-            [0.000, 0.000, 1.000]
-        ])
+        expected = csr_array(
+            [
+                [0.000, 0.250, 0.750],
+                [0.000, 0.125, 0.875],
+                [0.000, 0.000, 1.000],
+            ]
+        )
         comparison = result == expected
         assert len(comparison.data) == 9

@@ -8,7 +8,6 @@ from benchmarks.abstract import AbstractArrayInfo, csv_writer
 
 
 class CSRArrayInfo(AbstractArrayInfo[csr_array]):
-
     @classmethod
     def shape(cls: Self, array: csr_array) -> tuple[int, ...]:
         return array.shape
@@ -43,10 +42,16 @@ def benchmark_sparsity_2d():
     for density in densities:
         timer = Timer(stmt, setup.format(density=density, shape=shape))
         timings = timer.repeat(repeat=10, number=10)
-        array = csr_array(random(shape, shape, density=density, format='csr',
-                                 dtype='float64',
-                                 random_state=np.random.default_rng(
-                                     1)))
+        array = csr_array(
+            random(
+                shape,
+                shape,
+                density=density,
+                format="csr",
+                dtype="float64",
+                random_state=np.random.default_rng(1),
+            )
+        )
         data.append(*CSRArrayInfo.as_tuple(array), *timings)
     runs = [f"run_{run:02}" for run in range(1, 10 + 1)]
     header = [*CSRArrayInfo.header(), *runs]
