@@ -55,3 +55,7 @@ class TestTransitionMatrixPositive:
     def test_numpy_array(self):
         array = np.array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
         assert not validate_matrix_positive(array)
+
+    def test_numpy_valid(self):
+        array = np.array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
+        assert validate_matrix_positive(array)

@@ -8,6 +8,7 @@ import logging
 from typing import TypeVar
 
 import numpy as np
+import scipy
 from scipy.sparse import csr_array
 
 _T = TypeVar("_T", np.array, csr_array)
@@ -74,12 +75,21 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
         "Validating probability signs of transition matrix %s.",
         transition_matrix.shape,
     )
-    values = transition_matrix < 0
-    is_valid = values.size == 0
+    negative = transition_matrix < 0
+    match type(transition_matrix):
+        case np.ndarray:
+            is_valid = np.any(negative) == 0
+        case scipy.sparse.csr_array:
+            is_valid = negative.size == 0
+        case _:
+            raise TypeError(
+                "Cannot validate transition matrix with type %s",
+                type(transition_matrix)
+            )
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
-            indices = np.argwhere(values is True)
-            for index, value in zip(indices, transition_matrix[values]):
+            indices = np.argwhere(negative== 1)
+            for index, value in zip(indices, transition_matrix[negative]):
                 _logger.warning(
                     "Probability %d with index %s is negative!", value, index
                 )
