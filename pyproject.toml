@@ -36,16 +36,16 @@ dependencies = [
     "pytest",
 ]
 [tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-    "- coverage combine",
-    "coverage report",
-]
 cov = [
     "test-cov",
     "cov-report",
 ]
+cov-report = [
+    "- coverage combine",
+    "coverage report",
+]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.10", "3.11"]
@@ -59,37 +59,37 @@ dependencies = [
     "ruff>=0.0.243",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
-style = [
-    "ruff {args:src/chain_simulator tests}",
-    "pylint {args:src/chain_simulator tests}",
+all = [
+    "typing",
+    "style",
 ]
 fmt = [
     "black {args:.}",
     "docformatter --in-place --recursive {args:src/chain_simulator tests}",
     "ruff --fix {args:src/chain_simulator tests}",
 ]
-all = [
-    "typing",
-    "style",
+style = [
+    "ruff {args:src/chain_simulator tests}",
+    "pylint {args:src/chain_simulator tests}",
 ]
+typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
 
 [tool.hatch.envs.docs]
 dependencies = [
     "furo>=2023.0",
     "Sphinx>=6.1",
-    "sphinx-copybutton>=0.5.1",
     "sphinx-autobuild>=2021.3.14"
+    "sphinx-copybutton>=0.5.1",
 ]
 [tool.hatch.envs.docs.scripts]
 api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
+autobuild = "sphinx-autobuild docs/source/ docs/build/html"
 build = [
     "api",
     "test",
     "sphinx-build -b html docs/source/ docs/build/html"
 ]
 test = "sphinx-build -b doctest docs/source/ docs/build/html"
-autobuild = "sphinx-autobuild docs/source/ docs/build/html"
 
 
 [tool.black]
