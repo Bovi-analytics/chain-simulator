@@ -5,13 +5,12 @@ matrices. These functions are written to help perform common tasks when
 working with this package.
 """
 import logging
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
-import scipy
-from scipy.sparse import csr_array
+import scipy.sparse as sps
 
-_T = TypeVar("_T", np.array, csr_array)
+_T = TypeVar("_T", np.ndarray[Any, Any], sps.csr_array)
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
@@ -76,16 +75,16 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
         transition_matrix.shape,
     )
     negative = transition_matrix < 0
-    match type(transition_matrix):
-        case np.ndarray:
-            is_valid = np.any(negative) == 0
-        case scipy.sparse.csr_array:
-            is_valid = negative.size == 0
-        case _:
-            raise TypeError(
-                "Cannot validate transition matrix with type %s",
-                type(transition_matrix),
-            )
+    is_valid: bool
+    if isinstance(transition_matrix, np.ndarray):
+        is_valid = np.any(negative) == 0
+    elif isinstance(transition_matrix, sps.csr_array):
+        is_valid = negative.size == 0
+    else:
+        raise TypeError(
+            "Cannot validate transition matrix with type %s",
+            type(transition_matrix),
+        )
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
             indices = np.argwhere(negative == 1)

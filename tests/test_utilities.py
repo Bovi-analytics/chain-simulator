@@ -51,10 +51,10 @@ class TestTransitionMatrixPositive:
         array = csr_array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
         assert not validate_matrix_positive(array)
 
-    def test_numpy_array(self):
+    def test_numpy_array(self: Self) -> None:
         array = np.array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
         assert not validate_matrix_positive(array)
 
-    def test_numpy_valid(self):
+    def test_numpy_valid(self: Self) -> None:
         array = np.array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
         assert validate_matrix_positive(array)

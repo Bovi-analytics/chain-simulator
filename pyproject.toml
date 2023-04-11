@@ -95,7 +95,7 @@ plugins = [
     "numpy.typing.mypy_plugin"
 ]
 [[tool.mypy.overrides]]
-module = "scipy.sparse.*"
+module = "scipy.*"
 ignore_missing_imports = true
 
 
