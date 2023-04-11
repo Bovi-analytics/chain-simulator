@@ -23,10 +23,10 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
     matrix in considered faulty.
 
     Method of validation: first the sum is computed for each row in the
-    transition matrix. Then, the count of rows is divided by the sum of sums
-    of all rows. This division should be exactly 1 when the transition matrix
-    is valid. When the division is not exactly 1 the transition matrix is
-    faulty.
+    transition matrix. Then, the count of rows is subtracted of the sum of sums
+    of all rows. This subtraction should be exactly 0 when the transition
+    matrix is valid. When the division is not exactly 1 the transition matrix
+    is faulty.
 
     :param transition_matrix: any SciPy 2d-array or matrix.
     :type transition_matrix: _T
@@ -38,7 +38,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
         transition_matrix.shape,
     )
     sum_rows = transition_matrix.sum(1)
-    if not (is_valid := len(sum_rows) / sum_rows.sum() == 1):
+    if not (is_valid := len(sum_rows) - sum_rows.sum() == 0):
         if _logger.isEnabledFor(logging.WARNING):
             for index, sum_row in enumerate(sum_rows):
                 if sum_row != 1:

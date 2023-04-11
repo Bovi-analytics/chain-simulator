@@ -50,8 +50,8 @@ class TestChainSimulator:
         expected = csr_array(
             [[0.00, 0.50, 0.50], [0.00, 0.25, 0.75], [0.00, 0.00, 1.00]]
         )
-        comparison = result == expected
-        assert len(comparison.data) == 9
+        comparison = result != expected
+        assert len(comparison.data) == 0
 
     def test_matmul_2(self: Self) -> None:
         """Test matrix multiplication twice."""
@@ -64,5 +64,5 @@ class TestChainSimulator:
                 [0.000, 0.000, 1.000],
             ]
         )
-        comparison = result == expected
-        assert len(comparison.data) == 9
+        comparison = result != expected
+        assert len(comparison.data) == 0
