@@ -7,22 +7,22 @@ Welcome to Chain simulator's documentation!
 ===========================================
 
 .. toctree::
+   :maxdepth: 1
 
-   api
+   utilities
+   api_reference
 
-hallo world!
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
 
-testdoc
-=======
+.. testdoc
+   =======
 
-.. autoclass:: chain_simulator.abstract.AbstractDigitalTwinFacade
-   :members:
-   :special-members: __init__
+   .. autoclass:: chain_simulator.abstract.AbstractDigitalTwinFacade
+      :members:
+      :special-members: __init__
