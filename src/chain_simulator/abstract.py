@@ -1,3 +1,9 @@
+"""Abstract base classes to be implemented.
+
+Module which provides abstract base classes. These classes are for both
+internal implementations and for external users of this library.
+"""
+
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import Generic, TypeVar
@@ -15,9 +21,9 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
     bridge to 'tell' chain-simulator how to het probabilities from a
     digital twin.
 
-    The method :func:`~AbstractDigitalTwinFacade.probability` is marked as
-    abstract. This method needs to be implemented so that simulation-platform
-    can convert the digital twin into a transition matrix.
+    The method :func:`~AbstractDigitalTwinFacade.probability` is marked
+    as abstract. This method needs to be implemented so that simulation-
+    platform can convert the digital twin into a transition matrix.
     """
 
     __slots__ = ("_digital_twin", "_states")
@@ -79,17 +85,45 @@ _U = TypeVar("_U")
 
 
 class AbstractArrayAssemblerV1(ABC, Generic[_U]):
-    __slots__ = "_probability_calculator"
+    """Abstract array assembler, version 1.
+
+    Abstract base class for assembling arrays. The assembler must make
+    use of an implementation of :class:`~AbstractDigitalTwinFacade` for
+    calculating probabilities.
+    """
+
+    __slots__ = ("_probability_calculator",)
 
     def __init__(
         self: Self, probability_calculator: AbstractDigitalTwinFacade[_T]
     ) -> None:
+        """Construct the assembler.
+
+        Accepts an implementation of :class:`~AbstractDigitalTwinFacade` and
+        makes stores this facade for later use.
+
+        :param probability_calculator: Digital twin facade..
+        :type probability_calculator: AbstractDigitalTwinFacade[_T]
+        """
         self._probability_calculator = probability_calculator
 
     @property
     def probability_calculator(self) -> AbstractDigitalTwinFacade[_T]:
+        """Getter for the digital twin facade.
+
+        :return: Digital twin facade.
+        :rtype: AbstractDigitalTwinFacade[_T]
+        """
         return self._probability_calculator
 
     @abstractmethod
     def assemble(self) -> _U:
+        """Abstract method for assembling an array.
+
+        Method which assembles an array based on the digital twin facade
+        provided while constructing this object.
+
+        :return: assembled transition matrix.
+        :rtype: _U
+        """
         raise NotImplementedError

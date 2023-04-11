@@ -1,6 +1,8 @@
+"""Implementations of :mod:`~chain_simulator.abstract`."""
+
 from decimal import Decimal
 from itertools import count, product
-from typing import Generator, TypeVar
+from typing import Generator, Iterable, TypeVar
 
 from scipy.sparse import csc_array, csr_array, lil_array
 from typing_extensions import Self
@@ -11,14 +13,30 @@ from chain_simulator.abstract import (
 
 
 class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
+    """Implementation of AbstractArrayAssemblerV1.
+
+    Concrete class of
+    :class:`~chain_simulator.abstract.AbstractArrayAssemblerV1`.
+    """
+
     def assemble(self: Self) -> csr_array:
+        """Assemble an array in the Compressed Sparse Row (CSR) format.
+
+        Method to assemble an array in the Compressed Sparse Row (CSR) format.
+        This format excels in representing sparse arrays while also allowing
+        fast arithmetic operations on the array.
+
+        :return: Transition matrix in Compressed Sparse Row (CSR) format.
+        :rtype: csr_array
+        """
         calculator = self.probability_calculator
         states = calculator.states
         allocated_array = self.allocate_array(len(states))
         state_index = self.states_to_index(states)
         for state_from, state_to in self.state_combinations(states):
-            probability = calculator.probability(state_from, state_to)
-            if probability > Decimal("0"):
+            if (
+                probability := calculator.probability(state_from, state_to)
+            ) > Decimal("0"):
                 index_row = state_index[state_from]
                 index_col = state_index[state_to]
                 allocated_array[index_row, index_col] = probability
@@ -26,19 +44,50 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
 
     @classmethod
     def allocate_array(cls, size: int, dtype: str = "float64") -> lil_array:
+        """Allocate an editable array in memory.
+
+        Method to allocate an array in memory that can be edited. Not all
+        sparse matrix formats allow mutation. For this reason a List of Lists
+        (LIL) format is used.
+
+        :param size: The size of the array to allocate in shape (size, size).
+        :type size int
+        :param dtype: Data type to use for allocating digits in the array.
+        :type dtype: str
+        :return: Allocated LIL array pf size `size` and dtype `dtype`.
+        :rtype lil_array
+        """
         return lil_array((size, size), dtype=dtype)
 
     @classmethod
-    def states_to_index(cls, states: tuple[str, ...]) -> dict[str, int]:
+    def states_to_index(cls, states: Iterable[str]) -> dict[str, int]:
+        """Convert a collection of states into an index.
+
+        Method which builds an index of a collection of states. This index can
+        be used to find the ordered number of a state. Useful for translating
+        a column/row index into the name of a state.
+
+        :param states: Collection of states.
+        :type states: Iterable[str]
+        :return: Index of states.
+        :rtype: dict[str, int]
+        """
         index = {}
-        for state, number in zip(states, count()):
+        for state, number in zip(states, count(), strict=False):
             index[state] = number
         return index
 
     @classmethod
     def state_combinations(
-        cls, states: tuple[str, ...]
+        cls, states: Iterable[str]
     ) -> Generator[tuple[str, str], None, None]:
+        """Generate all possible combinations of states.
+
+        :param states: States to generate combinations of.
+        :type states: Iterable[str]
+        :return: Combination of states.
+        :rtype: Generator[tuple[str, str], None, None]
+        """
         yield from product(states, repeat=2)
 
 
@@ -46,6 +95,19 @@ _T = TypeVar("_T", csr_array, csc_array)
 
 
 def chain_simulator(array: _T, steps: int) -> _T:
+    """Progress a Markov chain forward in time.
+
+    Method which progresses a Markov chain forward in time using a provided
+    transition matrix. Based on the `steps` parameter, the transition matrix is
+    raised to the power of `steps`. This is done using a matrix multiplication.
+
+    :param array: Transition matrix.
+    :type array: _T
+    :param steps: Steps in time to progress the simulation.
+    :type steps: int
+    :return: Transition matrix progressed in time.
+    :rtype _T
+    """
     if steps == 1:
         return array @ array
     new_array = array

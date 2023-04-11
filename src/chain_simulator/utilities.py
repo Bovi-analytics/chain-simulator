@@ -38,8 +38,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
         transition_matrix.shape,
     )
     sum_rows = transition_matrix.sum(1)
-    is_valid: bool = (len(sum_rows) / sum_rows.sum()) == 1
-    if not is_valid:
+    if not (is_valid := len(sum_rows) / sum_rows.sum() == 1):
         if _logger.isEnabledFor(logging.WARNING):
             for index, sum_row in enumerate(sum_rows):
                 if sum_row != 1:
@@ -50,7 +49,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
                     )
     else:
         _logger.info("Transition matrix is valid (all rows sum to 1).")
-    return is_valid
+    return is_valid  # type: ignore[no-any-return]
 
 
 def validate_matrix_positive(transition_matrix: _T) -> bool:
@@ -69,6 +68,7 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     :type transition_matrix: _T
     :return: whether all numbers in the transition matrix are positive.
     :rtype: bool
+    :raise TypeError: Cannot validate transition matrix, unsupported type.
     """
     _logger.debug(
         "Validating probability signs of transition matrix %s.",
@@ -77,18 +77,20 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     negative = transition_matrix < 0
     is_valid: bool
     if isinstance(transition_matrix, np.ndarray):
-        is_valid = np.any(negative) == 0
+        is_valid = not np.any(negative)
     elif isinstance(transition_matrix, sps.csr_array):
-        is_valid = negative.size == 0
+        is_valid = not negative.size
     else:
         raise TypeError(
-            "Cannot validate transition matrix with type %s",
-            type(transition_matrix),
+            f"Cannot validate transition matrix with type "
+            f"{type(transition_matrix)}",
         )
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
             indices = np.argwhere(negative == 1)
-            for index, value in zip(indices, transition_matrix[negative]):
+            for index, value in zip(
+                indices, transition_matrix[negative], strict=True
+            ):
                 _logger.warning(
                     "Probability %d with index %s is negative!", value, index
                 )
