@@ -78,7 +78,7 @@ typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests
 dependencies = [
     "furo>=2023.0",
     "Sphinx>=6.1",
-    "sphinx-autobuild>=2021.3.14"
+    "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.1",
 ]
 [tool.hatch.envs.docs.scripts]
