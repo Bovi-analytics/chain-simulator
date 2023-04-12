@@ -1,6 +1,10 @@
 Chain simulator
 ===============
 
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+----
+
 These are the humble beginnings of a generic and highly scalable platform 
 for simulating digital twins using Markov chains.
 
@@ -9,9 +13,9 @@ for simulating digital twins using Markov chains.
 # Contributing
 The package is written in [Python](https://www.python.org/), specifically for 
 Python 3.10 and newer. It is assumed that a supported Python interpreter is 
-already installed. Dependency management is done using [Poetry](https://python-poetry.org/), 
-make sure this tool is installed too. To set up your development environment, 
-do the following:
+already installed. Dependency management is done using 
+[Hatch](https://hatch.pypa.io/latest/), make sure this tool is installed too. 
+To set up your development environment, do the following:
 
 1. Clone the chain-simulator repository to your computer:
     ```shell
@@ -23,7 +27,7 @@ do the following:
     ```
 3. Install all package dependencies in a virtual environment:
     ```shell
-    poetry install
+    hatch env create
     ```
 
 You should now be set up for contributing to the simulation platform!
@@ -46,6 +50,7 @@ tests = "Unit tests to test the simulation platform"
 ".pre-commit-config.yml" = "Tasks to execute on each commit"
 "pyproject.toml" = "Configurations for the build system, linters, type checkers and testing frameworks"
 "README.md" = "Description of this repository"
+"tox.ini" = "Configuration for Tox to run tests on multiple Python versions"
 ```
 
 
