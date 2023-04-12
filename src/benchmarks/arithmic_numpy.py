@@ -1,14 +1,19 @@
 from timeit import Timer
 from typing import Any
 
-import numpy as np
-import numpy.typing as npt
+from numpy import arange, count_nonzero, dtype
+from numpy.random import default_rng
+from numpy.typing import NDArray
 from typing_extensions import Self
 
-from benchmarks.abstract import _T, AbstractArrayInfo, csv_writer
+from benchmarks.abstract import (
+    _T,
+    AbstractArrayInfo,
+    csv_writer,
+)
 
 
-class ArrayInfo(AbstractArrayInfo[npt.NDArray[Any]]):
+class ArrayInfo(AbstractArrayInfo[NDArray[Any]]):
     @classmethod
     def shape(cls: Self, array: _T) -> tuple[int, ...]:
         return array.shape
@@ -26,12 +31,12 @@ class ArrayInfo(AbstractArrayInfo[npt.NDArray[Any]]):
         return array.itemsize
 
     @classmethod
-    def dtype(cls: Self, array: _T) -> np.dtype:
+    def dtype(cls: Self, array: _T) -> dtype:
         return array.dtype
 
     @classmethod
     def count_nonzero(cls: Self, array: _T) -> int:
-        return np.count_nonzero(array)
+        return count_nonzero(array)
 
 
 def benchmark_size_2d():
@@ -44,7 +49,7 @@ def benchmark_size_2d():
     for shape in shapes:
         timer = Timer(stmt, setup.format(shape=shape))
         timings = timer.repeat(number=iterations, repeat=repeats)
-        array = np.random.default_rng(1).random((shape, shape), "float64")
+        array = default_rng(1).random((shape, shape), "float64")
         data.append((*ArrayInfo.as_tuple(array), *timings))
         print(f"Shape {shape} of {shapes[-1]}")
     head = [f"run_{run:02}" for run in range(1, repeats + 1)]
@@ -54,14 +59,14 @@ def benchmark_size_2d():
 
 def benchmark_sparsity_2d():
     shape = 2048
-    sparsity = np.arange(0, 1, 0.1)
+    sparsity = arange(0, 1, 0.1)
     setup = "import numpy as np; array = np.random.default_rng(1).random(({shape}, {shape}), 'float64'); array[array < {sparse}] = 0"
     stmt = "array.dot(array)"
     data = []
     for sparse in sparsity:
         timer = Timer(stmt, setup.format(shape=shape, sparse=sparse))
         timings = timer.repeat(repeat=10, number=20)
-        array = np.random.default_rng(1).random((shape, shape), "float64")
+        array = default_rng(1).random((shape, shape), "float64")
         array[array < sparse] = 0
         data.append((*ArrayInfo.as_tuple(array), *timings))
         print(f"Sparsity {sparse} of {sparsity[-1]}")

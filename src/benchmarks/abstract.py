@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Generic, Iterable, TypeVar
 
-import numpy as np
+from numpy import dtype
 from typing_extensions import Self
 
 _T = TypeVar("_T")
@@ -32,7 +32,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
 
     @classmethod
     @abstractmethod
-    def dtype(cls: Self, array: _T) -> np.dtype:
+    def dtype(cls: Self, array: _T) -> dtype:
         raise NotImplementedError
 
     @classmethod
@@ -43,7 +43,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     def as_tuple(
         cls, array: _T
-    ) -> tuple[tuple[int, ...], int, int, int, np.dtype, int]:
+    ) -> tuple[tuple[int, ...], int, int, int, dtype, int]:
         return (
             cls.shape(array),
             cls.size(array),

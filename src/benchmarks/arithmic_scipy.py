@@ -1,6 +1,7 @@
 from timeit import Timer
 
-import numpy as np
+from numpy import arange, dtype
+from numpy.random import default_rng
 from scipy.sparse import csr_array, random
 from typing_extensions import Self
 
@@ -25,7 +26,7 @@ class CSRArrayInfo(AbstractArrayInfo[csr_array]):
         return array.data.itemsize
 
     @classmethod
-    def dtype(cls: Self, array: csr_array) -> np.dtype:
+    def dtype(cls: Self, array: csr_array) -> dtype:
         return array.data.dtype
 
     @classmethod
@@ -35,7 +36,7 @@ class CSRArrayInfo(AbstractArrayInfo[csr_array]):
 
 def benchmark_sparsity_2d():
     shape = 2048
-    densities = np.arange(0, 1 + 0.1, 0.1)
+    densities = arange(0, 1 + 0.1, 0.1)
     setup = "import scipy.sparse as cs; import numpy as np; array = cs.csr_array(cs.random({shape}, {shape}, density={density}, format='csr', dtype='float64', random_state=np.random.default_rng(1)))"
     stmt = "array.dot(array)"
     data = []
@@ -49,7 +50,7 @@ def benchmark_sparsity_2d():
                 density=density,
                 format="csr",
                 dtype="float64",
-                random_state=np.random.default_rng(1),
+                random_state=default_rng(1),
             )
         )
         data.append(*CSRArrayInfo.as_tuple(array), *timings)
