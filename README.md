@@ -41,20 +41,21 @@ to be found, below is a brief description of each in
 
 ```toml
 [folders]
-docs = "User guide for the simulation platform"
+".github" = "Mostly GitHub Actions configurations to run tests on multiple operating systems"
+docs = "User guide and API documentation for the simulation platform"
 src = "Source code of the simulation platform package"
 tests = "Unit tests to test the simulation platform"
 
 [files]
 ".gitignore" = "List of files and/or folders that must not be version-contolled"
 ".pre-commit-config.yml" = "Tasks to execute on each commit"
-"pyproject.toml" = "Configurations for the build system, linters, type checkers and testing frameworks"
-"README.md" = "Description of this repository"
-"tox.ini" = "Configuration for Tox to run tests on multiple Python versions"
+pyproject.toml = "Configurations for the build system, linters, type checkers and testing frameworks"
+README.md = "Description of this repository"
+tox.ini = "Configuration for Tox to run tests on multiple Python versions"
 ```
 
 
 
 ------------------------
 Author: Max Nollet  
-Last updated: 21-03-2023
+Last updated: 12-04-2023
