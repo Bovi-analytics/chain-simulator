@@ -38,18 +38,18 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
         transition_matrix.shape,
     )
     sum_rows = transition_matrix.sum(1)
-    if not (is_valid := len(sum_rows) - sum_rows.sum() == 0):
+    if not (is_valid := not len(sum_rows) - sum_rows.sum()):
         if _logger.isEnabledFor(logging.WARNING):
             for index, sum_row in enumerate(sum_rows):
                 if sum_row != 1:
                     _logger.warning(
-                        "Row %d sums to %d instead of 1!",
+                        "Row %d sums to %f instead of 1!",
                         index,
                         sum_row,
                     )
     else:
         _logger.info("Transition matrix is valid (all rows sum to 1).")
-    return is_valid  # type: ignore[no-any-return]
+    return is_valid
 
 
 def validate_matrix_positive(transition_matrix: _T) -> bool:

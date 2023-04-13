@@ -51,7 +51,7 @@ class TestChainSimulator:
             [[0.00, 0.50, 0.50], [0.00, 0.25, 0.75], [0.00, 0.00, 1.00]]
         )
         comparison = result != expected
-        assert len(comparison.data) == 0
+        assert comparison.size <= 0
 
     def test_matmul_2(self: Self) -> None:
         """Test matrix multiplication twice."""
@@ -65,4 +65,4 @@ class TestChainSimulator:
             ]
         )
         comparison = result != expected
-        assert len(comparison.data) == 0
+        assert comparison.size <= 0
