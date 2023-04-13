@@ -10,6 +10,7 @@ from benchmarks.abstract import (
     _T,
     AbstractArrayInfo,
     csv_writer,
+    timert
 )
 
 
@@ -40,7 +41,7 @@ class ArrayInfo(AbstractArrayInfo[NDArray[Any]]):
 
 
 def benchmark_size_2d():
-    shapes = range(1024, 4096 + 1, 64)
+    shapes = range(4_096, 32_768 + 1, 512)
     iterations = 20
     repeats = 10
     setup = "import numpy as np; array = np.random.default_rng(1).random(({shape}, {shape}), 'float64')"
@@ -75,6 +76,20 @@ def benchmark_sparsity_2d():
     csv_writer("benchmark_numpy_sparsity_2d", header, data)
 
 
+# def main():
+#     stmt = "array @ array"
+#     timert(stmt, assembly)
+#     # timer = Timer(stmt="array @ array", setup="from __main__ import assembly; array = assembly()")
+#     # timings = timer.repeat()
+#     # print(timings)
+#
+#
+# def assembly():
+#     array = default_rng(1).random((10, 10), 'float64')
+#     return array
+
+
 if __name__ == "__main__":
     benchmark_size_2d()
     benchmark_sparsity_2d()
+    # main()

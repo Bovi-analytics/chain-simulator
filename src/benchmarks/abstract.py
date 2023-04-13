@@ -1,7 +1,8 @@
 import csv
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Generic, Iterable, TypeVar
+from timeit import Timer
+from typing import Any, Callable, Generic, Iterable, TypeVar
 
 from numpy import dtype
 from typing_extensions import Self
@@ -65,6 +66,15 @@ class AbstractArrayInfo(ABC, Generic[_T]):
         )
 
 
+def timert(stmt: str, setup_func: Callable[..., Any], *args):
+    setup_name = setup_func.__name__
+    func_name = stmt.__name__
+    # timer = Timer(stmt, f"from __main__ import {func_name}; array = {func_name}()")
+    timer = Timer(f"{func_name}(args)", f"from __main__ import {setup_name}, {func_name}; args = {setup_name}()")
+    timings = timer.repeat(repeat=10, number=10)
+    return timings
+
+
 def csv_writer(
     filename: str,
     header: Iterable[Any],
@@ -74,13 +84,12 @@ def csv_writer(
     quoting: int = csv.QUOTE_MINIMAL,
 ) -> None:
     timestr = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    match delimiter:
-        case "\t":
-            extension = ".tsv"
-        case ",":
-            extension = ".csv"
-        case _:
-            extension = ".txt"
+    if delimiter == "\t":
+        extension = ".tsv"
+    elif delimiter == ",":
+        extension = ".csv"
+    else:
+        extension = ".txt"
     output_name = f"{filename}_{timestr}.{extension}"
     with open(output_name, "w", encoding="UTF-8", newline="") as file:
         writer = csv.writer(
