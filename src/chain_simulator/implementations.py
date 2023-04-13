@@ -4,7 +4,7 @@ from decimal import Decimal
 from itertools import count, product
 from typing import Generator, Iterable, TypeVar
 
-from scipy.sparse import csc_array, csr_array, lil_array
+from scipy.sparse import coo_array, csc_array, csr_array, lil_array
 from typing_extensions import Self
 
 from chain_simulator.abstract import (
@@ -31,16 +31,24 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
         """
         calculator = self.probability_calculator
         states = calculator.states
-        allocated_array = self.allocate_array(len(states))
         state_index = self.states_to_index(states)
+        rows = []
+        cols = []
+        data = []
         for state_from, state_to in self.state_combinations(states):
             if (
                 probability := calculator.probability(state_from, state_to)
             ) > Decimal("0"):
-                index_row = state_index[state_from]
-                index_col = state_index[state_to]
-                allocated_array[index_row, index_col] = probability
-        return allocated_array.tocsr()
+                rows.append(state_index[state_from])
+                cols.append(state_index[state_to])
+                data.append(probability)
+        count_states = len(states)
+        array = coo_array(
+            (data, (rows, cols)),
+            shape=(count_states, count_states),
+            dtype="float64",
+        )
+        return array.tocsr()
 
     @classmethod
     def allocate_array(cls, size: int, dtype: str = "float64") -> lil_array:
