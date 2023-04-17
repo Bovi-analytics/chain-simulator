@@ -3,7 +3,7 @@
 Module which provides abstract base classes. These classes are for both
 internal implementations and for external users of this library.
 """
-
+import warnings
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import Generic, TypeVar
@@ -42,6 +42,11 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
         :param states: All possible states the digital twin can be in.
         :type states: tuple[str, ...]
         """
+        message = (
+            "This facade was once used to assemble arrays but is "
+            "replaced with a more efficient alternative!"
+        )
+        warnings.warn(message, DeprecationWarning, stacklevel=2)
         self._digital_twin = digital_twin
         self._states = states
 
@@ -102,9 +107,14 @@ class AbstractArrayAssemblerV1(ABC, Generic[_U]):
         Accepts an implementation of :class:`~AbstractDigitalTwinFacade` and
         makes stores this facade for later use.
 
-        :param probability_calculator: Digital twin facade..
+        :param probability_calculator: Digital twin facade.
         :type probability_calculator: AbstractDigitalTwinFacade[_T]
         """
+        warning = (
+            "This method of assembling arrays is inefficient and will "
+            "be removed in a future version!"
+        )
+        warnings.warn(warning, DeprecationWarning, stacklevel=2)
         self._probability_calculator = probability_calculator
 
     @property

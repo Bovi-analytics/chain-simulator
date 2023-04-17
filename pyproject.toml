@@ -103,7 +103,7 @@ plugins = [
     "numpy.typing.mypy_plugin"
 ]
 [[tool.mypy.overrides]]
-module = "scipy.*"
+module = ["scipy.*", "_pytest.*"]
 ignore_missing_imports = true
 
 
