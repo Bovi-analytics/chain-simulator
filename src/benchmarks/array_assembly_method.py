@@ -1,3 +1,4 @@
+from itertools import count, repeat
 from textwrap import dedent
 from timeit import Timer
 from typing import Callable, Iterable, Optional, TypeVar
@@ -60,18 +61,30 @@ def run_benchmark(
 
 
 def benchmark_array_construction() -> None:
-    # Parameter configurations. 16_384
+    # Parameter configurations.
     range_axis = np.arange(1_024, 16_384 + 1, 1024)
     range_density = np.arange(0, 1.05, 0.05)
+    filename_suffix = "size_density"
     # Process parameter configurations for benchmarks.
     repeat_axes = np.repeat(range_axis, len(range_density))
     array_sizes = repeat_axes ** 2
     cells_to_fill = array_sizes * np.tile(range_density, len(range_axis))
     parameters = tuple(zip(repeat_axes, np.floor(cells_to_fill).astype(int)))
     # Run benchmarks.
-    construct_coo_init(*parameters)
-    construct_csc_init(*parameters)
-    construct_csr_init(*parameters)
+    construct_coo_init(*parameters, filename_suffix=filename_suffix)
+    construct_csc_init(*parameters, filename_suffix=filename_suffix)
+    construct_csr_init(*parameters, filename_suffix=filename_suffix)
+
+
+def benchmark_array_size_blowup() -> None:
+    range_axis = np.arange(2 ** 20, (2 ** 30 - 1) + (2 ** 20), 2 ** 20)
+    cells_to_fill = 2 ** 20
+    filename_suffix = "size_same_density"
+    parameters = tuple(zip(range_axis, repeat(cells_to_fill)))
+    # Run benchmarks
+    construct_coo_init(*parameters, filename_suffix=filename_suffix)
+    construct_csc_init(*parameters, filename_suffix=filename_suffix)
+    construct_csr_init(*parameters, filename_suffix=filename_suffix)
 
 
 def iterate_lil() -> None:
@@ -102,46 +115,12 @@ def iterate_lil() -> None:
     print(data)
 
 
-def construct_csr_init(*args: tuple[int, int]) -> None:
-    stmt = "csr_array((data, (rows, cols)), shape=(axis_size, axis_size))"
-    benchmark_data = []
-    for axis_size, cells_to_fill in args:
-        setup = array_setup("csr_array", axis_size, cells_to_fill)
-        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
-        timings = run_benchmark(stmt, setup, repeats=10)
-        benchmark_data.append(
-            {
-                **array_info,
-                "axis_size": axis_size,
-                "cells_to_fill": cells_to_fill,
-                **timings,
-            }
-        )
-    csv_writer("construct_csr_init", benchmark_data)
-
-
-def construct_csc_init(*args: tuple[int, int]) -> None:
-    stmt = "csc_array((data, (rows, cols)), shape=(axis_size, axis_size))"
-    benchmark_data = []
-    for axis_size, cells_to_fill in args:
-        setup = array_setup("csc_array", axis_size, cells_to_fill)
-        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
-        timings = run_benchmark(stmt, setup, repeats=10)
-        benchmark_data.append(
-            {
-                **array_info,
-                "axis_size": axis_size,
-                "cells_to_fill": cells_to_fill,
-                **timings,
-            }
-        )
-    csv_writer("construct_csc_init", benchmark_data)
-
-
-def construct_coo_init(*args: tuple[int, int]) -> None:
+def construct_coo_init(*args: tuple[int, int], filename_suffix: str) -> None:
     stmt = "coo_array((data, (rows, cols)), shape=(axis_size, axis_size))"
+    counter = count()
     benchmark_data = []
     for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
         setup = array_setup("coo_array", axis_size, cells_to_fill)
         array_info = analyze_array(stmt, setup, scipy_coo_array_info)
         timings = run_benchmark(
@@ -157,8 +136,45 @@ def construct_coo_init(*args: tuple[int, int]) -> None:
                 **timings,
             }
         )
-    csv_writer("construct_coo_init", benchmark_data)
+    csv_writer(f"construct_coo_init_{filename_suffix}", benchmark_data)
+
+
+def construct_csc_init(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "csc_array((data, (rows, cols)), shape=(axis_size, axis_size))"
+    benchmark_data = []
+    for axis_size, cells_to_fill in args:
+        setup = array_setup("csc_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
+        timings = run_benchmark(stmt, setup, repeats=10)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"construct_csc_init_{filename_suffix}", benchmark_data)
+
+
+def construct_csr_init(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "csr_array((data, (rows, cols)), shape=(axis_size, axis_size))"
+    benchmark_data = []
+    for axis_size, cells_to_fill in args:
+        setup = array_setup("csr_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
+        timings = run_benchmark(stmt, setup, repeats=10)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"construct_csr_init_{filename_suffix}", benchmark_data)
 
 
 if __name__ == "__main__":
     benchmark_array_construction()
+    benchmark_array_size_blowup()
