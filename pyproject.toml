@@ -65,14 +65,14 @@ all = [
 ]
 fmt = [
     "black {args:.}",
-    "docformatter --in-place --recursive {args:src/chain_simulator tests}",
-    "ruff --fix {args:src/chain_simulator tests}",
+    "docformatter --in-place --recursive {args:src tests}",
+    "ruff --fix {args:src tests}",
 ]
 style = [
-    "ruff {args:src/chain_simulator tests}",
-    "pylint {args:src/chain_simulator tests}",
+    "ruff {args:src tests}",
+    "pylint {args:src tests}",
 ]
-typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
+typing = "mypy --install-types --non-interactive {args:src tests}"
 
 [tool.hatch.envs.docs]
 dependencies = [
