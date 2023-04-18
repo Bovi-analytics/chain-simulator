@@ -3,7 +3,6 @@ Chain simulator
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![example](https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/actions/workflows/tests.yml/badge.svg)
 ----
 
 These are the humble beginnings of a generic and highly scalable platform 
