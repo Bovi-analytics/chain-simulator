@@ -12,6 +12,7 @@ class NumpyArrayDict(TypedDict):
     data_nbytes: int
     data_dtype: dtype[Any]
     data_itemsize: int
+    data_size: int
 
 
 class ScipySparseArrayDict(NumpyArrayDict):
@@ -23,9 +24,11 @@ class ScipyCSArrayDict(ScipySparseArrayDict):
     indices_nbytes: int
     indices_dtype: dtype[Any]
     indices_itemsize: int
+    indices_size: int
     indptr_nbytes: int
     indptr_dtype: dtype[Any]
     indptr_itemsize: int
+    indptr_size: int
     has_sorted_indices: bool
 
 
@@ -33,9 +36,11 @@ class ScipyCOOArrayDict(ScipySparseArrayDict):
     row_nbytes: int
     row_dtype: dtype[Any]
     row_itemsize: int
+    row_size: int
     col_nbytes: int
     col_dtype: dtype[Any]
     col_itemsize: int
+    col_size: int
 
 
 def numpy_array_info(array: ndarray) -> NumpyArrayDict:
@@ -46,6 +51,7 @@ def numpy_array_info(array: ndarray) -> NumpyArrayDict:
         "data_nbytes": array.data.nbytes,
         "data_dtype": array.data.dtype,
         "data_itemsize": array.data.itemsize,
+        "data_size": array.data.size
     }
 
 
@@ -71,14 +77,17 @@ def scipy_cs_array_info(array: _CSLIKE) -> ScipyCSArrayDict:
         "data_nbytes": array.data.nbytes,
         "data_dtype": array.data.dtype,
         "data_itemsize": array.data.itemsize,
+        "data_size": array.data.size,
         "nnz": array.nnz,
         "format": array.format,
         "indices_nbytes": array.indices.nbytes,
         "indices_dtype": array.indices.dtype,
         "indices_itemsize": array.indices.itemsize,
+        "indices_size": array.indices.size,
         "indptr_nbytes": array.indptr.nbytes,
         "indptr_dtype": array.indptr.dtype,
         "indptr_itemsize": array.indptr.itemsize,
+        "indptr_size": array.indptr.size,
         "has_sorted_indices": array.has_sorted_indices,
     }
 
@@ -91,12 +100,15 @@ def scipy_coo_array_info(array: coo_array) -> ScipyCOOArrayDict:
         "data_nbytes": array.data.nbytes,
         "data_dtype": array.data.dtype,
         "data_itemsize": array.data.itemsize,
+        "data_size": array.data.size,
         "nnz": array.nnz,
         "format": array.format,
         "row_nbytes": array.row.nbytes,
         "row_dtype": array.row.dtype,
         "row_itemsize": array.row.itemsize,
+        "row_size": array.row.size,
         "col_nbytes": array.col.nbytes,
         "col_dtype": array.col.dtype,
         "col_itemsize": array.col.itemsize,
+        "col_size": array.col.size,
     }
