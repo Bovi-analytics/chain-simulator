@@ -11,6 +11,7 @@ Welcome to Chain simulator's documentation!
 
    utilities
    api_reference
+   changelog
 
 
 Indices and tables

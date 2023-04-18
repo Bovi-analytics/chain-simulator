@@ -80,6 +80,7 @@ dependencies = [
     "Sphinx>=6.1",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.1",
+    "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
 api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
@@ -180,3 +181,12 @@ target-version = "py310"
 exclude_dirs = [
     "tests"
 ]
+
+
+[tool.towncrier]
+directory = "changelog"
+filename = "docs/source/changelog.rst"
+name = "Chain Simulator"
+package = "chain_simulator"
+package_dir = "src"
+template = "changelog/towncrier_template.rst.jinja"
