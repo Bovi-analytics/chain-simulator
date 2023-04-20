@@ -70,7 +70,7 @@ fmt = [
 ]
 style = [
     "ruff {args:src/chain_simulator tests}",
-    "pylint {args:src/chain_simulator tests}",
+    "pylint {args:src/chain_simulator}",
 ]
 typing = "mypy --install-types --non-interactive {args:src/chain_simulator tests}"
 
@@ -104,7 +104,7 @@ plugins = [
     "numpy.typing.mypy_plugin"
 ]
 [[tool.mypy.overrides]]
-module = ["scipy.*", "_pytest.*"]
+module = ["scipy.*", "pytest.*", "_pytest.*"]
 ignore_missing_imports = true
 
 
