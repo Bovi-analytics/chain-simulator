@@ -35,9 +35,13 @@ def array_setup(array_type: str, axis_size: int, cells_to_fill: int) -> str:
 _T = TypeVar("_T")
 
 
-def analyze_array(stmt: str, setup: str, extractor: Callable):
+def analyze_array(stmt: str, setup: str, extractor: Callable, retrieve_stmt=None):
     exec(setup)
-    array = eval(stmt)
+    if retrieve_stmt:
+        exec(stmt)
+        array = eval(retrieve_stmt)
+    else:
+        array = eval(stmt)
     return extractor(array)
 
 
@@ -71,9 +75,11 @@ def benchmark_array_construction() -> None:
     cells_to_fill = array_sizes * np.tile(range_density, len(range_axis))
     parameters = tuple(zip(repeat_axes, np.floor(cells_to_fill).astype(int)))
     # Run benchmarks.
-    construct_coo_init(*parameters, filename_suffix=filename_suffix)
-    construct_csc_init(*parameters, filename_suffix=filename_suffix)
-    construct_csr_init(*parameters, filename_suffix=filename_suffix)
+    # construct_coo_init(*parameters, filename_suffix=filename_suffix)
+    # construct_csc_init(*parameters, filename_suffix=filename_suffix)
+    # construct_csr_init(*parameters, filename_suffix=filename_suffix)
+    iterate_dok(*parameters, filename_suffix=filename_suffix)
+    # iterate_lil(*parameters, filename_suffix=filename_suffix)
 
 
 def benchmark_array_size_blowup() -> None:
@@ -82,37 +88,62 @@ def benchmark_array_size_blowup() -> None:
     filename_suffix = "size_same_density"
     parameters = tuple(zip(range_axis, repeat(cells_to_fill)))
     # Run benchmarks
-    construct_coo_init(*parameters, filename_suffix=filename_suffix)
-    construct_csc_init(*parameters, filename_suffix=filename_suffix)
-    construct_csr_init(*parameters, filename_suffix=filename_suffix)
+    # construct_coo_init(*parameters, filename_suffix=filename_suffix)
+    # construct_csc_init(*parameters, filename_suffix=filename_suffix)
+    # construct_csr_init(*parameters, filename_suffix=filename_suffix)
 
 
-def iterate_lil() -> None:
-    setup = dedent(
-        """
-    from numpy import array
-    from numpy.random import default_rng
-    from math import pow
-    from scipy.sparse import lil_array
-
-    axis_size = {axis_size:d}
-    axis_range = array(range(0, axis_size))
-    cells_count = int(pow(axis_size, 2) * {density:f})
-    rows = default_rng(1).choice(axis_range, cells_count)
-    cols = default_rng(1).choice(axis_range, cells_count)
-    data = default_rng(1).random(cells_count)
-    """
-    )
+def iterate_dok(*args: tuple[int, int], filename_suffix: str) -> None:
     stmt = dedent(
         """
-        array = lil_array((axis_size, axis_size), dtype="float64")
+        transition_matrix = dok_array((axis_size, axis_size))
         for index_row, index_col, num in zip(rows, cols, data):
-            array[index_row, index_col] = num
+            transition_matrix[index_row, index_col] = num
         """
     )
-    timer = Timer(stmt, setup)
-    data = timer.repeat(10, 10)
-    print(data)
+    benchmark_data = []
+    counter = count()
+    print(f"iterate_dok_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = array_setup("dok_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, None,
+                                   retrieve_stmt="transition_matrix")
+
+
+def iterate_lil(*args: tuple[int, int], filename_suffix: str) -> None:
+    # setup = dedent(
+    #     """
+    # from numpy import array
+    # from numpy.random import default_rng
+    # from math import pow
+    # from scipy.sparse import lil_array
+    #
+    # axis_size = {axis_size:d}
+    # axis_range = array(range(0, axis_size))
+    # cells_count = int(pow(axis_size, 2) * {density:f})
+    # rows = default_rng(1).choice(axis_range, cells_count)
+    # cols = default_rng(1).choice(axis_range, cells_count)
+    # data = default_rng(1).random(cells_count)
+    # """
+    # )
+    stmt = dedent(
+        """
+        transition_matrix = lil_array((axis_size, axis_size))
+        for index_row, index_col, num in zip(rows, cols, data):
+            transition_matrix[index_row, index_col] = num
+        """
+    )
+    benchmark_data = []
+    counter = count()
+    print(f"iterate_lil_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = array_setup("dok_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, None, retrieve_stmt="transition_matrix")
+    # timer = Timer(stmt, setup)
+    # data = timer.repeat(10, 10)
+    # print(data)
 
 
 def construct_coo_init(*args: tuple[int, int], filename_suffix: str) -> None:
