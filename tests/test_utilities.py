@@ -1,4 +1,5 @@
 """Tests for module :mod:`~chain_simulator.utilities`."""
+import sys
 
 import numpy as np
 import numpy.typing as npt
@@ -8,7 +9,10 @@ from chain_simulator.utilities import (
     validate_matrix_sum,
 )
 from scipy.sparse import coo_array, csc_array, csr_array
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 TestingArray = npt.NDArray[np.int32]
 

@@ -1,10 +1,14 @@
 import csv
+import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Generic, Iterable, TypeVar
 
 from numpy import dtype
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 _T = TypeVar("_T")
 

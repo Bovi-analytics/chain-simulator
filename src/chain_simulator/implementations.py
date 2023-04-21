@@ -1,10 +1,14 @@
 """Implementations of :mod:`~chain_simulator.abstract`."""
+import sys
 from decimal import Decimal
 from itertools import count, product
 from typing import Generator, Iterable, Iterator, TypeVar
 
 from scipy.sparse import coo_array, csr_array, lil_array
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from chain_simulator.abstract import (
     AbstractArrayAssemblerV1,

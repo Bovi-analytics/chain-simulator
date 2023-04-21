@@ -1,9 +1,13 @@
+import sys
 from timeit import Timer
 
 from numpy import arange, dtype
 from numpy.random import default_rng
 from scipy.sparse import csr_array, random
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from benchmarks.abstract import AbstractArrayInfo, csv_writer
 

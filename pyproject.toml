@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "scipy>=1.10",
-    "typing-extensions>=4.0.1"
+    "typing-extensions>=4.0.1; python_version < '3.11'"
 ]
 
 [project.urls]

@@ -1,4 +1,5 @@
 """Tests for module :mod:`~chain_simulator.implementations`."""
+import sys
 from typing import Iterator
 
 from chain_simulator.implementations import (
@@ -7,7 +8,10 @@ from chain_simulator.implementations import (
     chain_simulator,
 )
 from scipy.sparse import coo_array
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 
 def dummy_probability_generator() -> Iterator[tuple[int, int, float]]:

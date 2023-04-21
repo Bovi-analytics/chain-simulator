@@ -3,12 +3,16 @@
 Module which provides abstract base classes. These classes are for both
 internal implementations and for external users of this library.
 """
+import sys
 import warnings
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import Generic, TypeVar
 
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 _T = TypeVar("_T")
 
