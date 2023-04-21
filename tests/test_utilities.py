@@ -7,7 +7,7 @@ from chain_simulator.utilities import (
     validate_matrix_positive,
     validate_matrix_sum,
 )
-from scipy.sparse import coo_array, csr_array
+from scipy.sparse import coo_array, csc_array, csr_array
 from typing_extensions import Self
 
 TestingArray = npt.NDArray[np.int32]
@@ -65,6 +65,33 @@ def scipy_coo_array_negative() -> coo_array:
     :rtype: coo_array
     """
     return coo_array(numpy_ndarray_negative())
+
+
+def scipy_csc_array_valid() -> csc_array:
+    """Generate a valid SciPy csc_array.
+
+    :return: A valid SciPy csc_array.
+    :rtype: csc_array
+    """
+    return csc_array(numpy_ndarray_valid())
+
+
+def scipy_csc_array_zeroes() -> csc_array:
+    """Generate an invalid SciPy csc_array with only zeroes.
+
+    :return: An invalid SciPy csc_array with zeroes.
+    :rtype: csc_array
+    """
+    return csc_array(numpy_ndarray_zero())
+
+
+def scipy_csc_array_negative() -> csc_array:
+    """Generate an invalid SciPy csc_array with negative numbers.
+
+    :return: An invalid SciPy csc_array with negative numbers.
+    :rtype: csc_array
+    """
+    return csc_array(numpy_ndarray_negative())
 
 
 def scipy_csr_array_valid() -> csr_array:
@@ -130,28 +157,17 @@ class TestTransitionMatrixPositive:
 
     def test_all_positive(self: Self) -> None:
         """Test when all numbers are positive."""
-        array = csr_array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
-        assert validate_matrix_positive(array)
+        assert validate_matrix_positive(numpy_ndarray_valid())
+        assert validate_matrix_positive(scipy_coo_array_valid())
+        assert validate_matrix_positive(scipy_csc_array_valid())
+        assert validate_matrix_positive(scipy_csr_array_valid())
 
-    def test_one_negative(self: Self) -> None:
-        """Test when one row contains a single negative number."""
-        array = csr_array([[-1, 1, 0], [1, 0, 0], [0, 0, 1]])
-        assert not validate_matrix_positive(array)
-
-    def test_three_negative(self: Self) -> None:
-        """Test when three rows all contain negative numbers."""
-        array = csr_array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
-        assert not validate_matrix_positive(array)
-
-    def test_numpy_array(self: Self) -> None:
-        """Test when there is a faulty NumPy array."""
-        array = np.array([[-1, 1, 0], [-1, 0, 0], [0, 0, -1]])
-        assert not validate_matrix_positive(array)
-
-    def test_numpy_valid(self: Self) -> None:
-        """Test when there is a valid NumPy array."""
-        array = np.array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
-        assert validate_matrix_positive(array)
+    def test_negative(self: Self) -> None:
+        """Test when three rows contain a single negative number."""
+        assert not validate_matrix_positive(numpy_ndarray_negative())
+        assert not validate_matrix_positive(scipy_coo_array_negative())
+        assert not validate_matrix_positive(scipy_csc_array_negative())
+        assert not validate_matrix_positive(scipy_csr_array_negative())
 
     def test_logging_message(self: Self, caplog: LogCaptureFixture) -> None:
         """Test whether a warning message is emitted.
@@ -164,4 +180,3 @@ class TestTransitionMatrixPositive:
         for record in caplog.records[:1]:
             assert record.levelname == "WARNING"
             assert "index [0 1]" in record.message
-            assert "Probability -1" in record.message

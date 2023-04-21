@@ -10,7 +10,9 @@ from typing import Any, TypeVar
 import numpy as np
 import scipy.sparse as sps
 
-_T = TypeVar("_T", np.ndarray[Any, Any], sps.csr_array)
+_T = TypeVar(
+    "_T", np.ndarray[Any, Any], sps.coo_array, sps.csc_array, sps.csr_array
+)
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
@@ -64,36 +66,25 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     this count is exactly 0, the transition matrix is valid. Otherwise, it is
     considered faulty.
 
-    :param transition_matrix: any SciPy 2d-array or matrix.
+    :param transition_matrix: any NumPy/SciPy 2d-array or matrix.
     :type transition_matrix: _T
     :return: whether all numbers in the transition matrix are positive.
     :rtype: bool
-    :raise TypeError: Cannot validate transition matrix, unsupported type.
     """
     _logger.debug(
         "Validating probability signs of transition matrix %s.",
         transition_matrix.shape,
     )
     negative = transition_matrix < 0
-    is_valid: bool
-    if isinstance(transition_matrix, np.ndarray):
+    try:
+        is_valid = not negative.count_nonzero()  # type: ignore[attr-defined]
+    except AttributeError:
         is_valid = not np.any(negative)
-    elif isinstance(transition_matrix, sps.csr_array):
-        is_valid = not negative.size
-    else:
-        raise TypeError(
-            f"Cannot validate transition matrix with type "
-            f"{type(transition_matrix)}",
-        )
     if not is_valid:
         if _logger.isEnabledFor(logging.WARNING):
             indices = np.argwhere(negative == 1)
-            for index, value in zip(
-                indices, transition_matrix[negative], strict=True
-            ):
-                _logger.warning(
-                    "Probability %d with index %s is negative!", value, index
-                )
+            for index in indices:
+                _logger.warning("Probability on index %s is negative!", index)
     else:
         _logger.info(
             "Transition matrix is valid (all probabilities are positive)."
