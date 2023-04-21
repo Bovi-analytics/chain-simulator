@@ -1,1 +1,0 @@
-Adjusted transition matrix validators to be compatible with SciPy COO/CSC/CSR formats.
