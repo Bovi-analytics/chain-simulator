@@ -42,6 +42,7 @@ to be found, below is a brief description of each in
 ```toml
 [folders]
 ".github" = "Mostly GitHub Actions configurations to run tests on multiple operating systems"
+changelog = "Small news files used for generating a changelog"
 docs = "User guide and API documentation for the simulation platform"
 src = "Source code of the simulation platform package"
 tests = "Unit tests to test the simulation platform"
@@ -58,4 +59,4 @@ tox.ini = "Configuration for Tox to run tests on multiple Python versions"
 
 ------------------------
 Author: Max Nollet  
-Last updated: 18-04-2023
+Last updated: 21-04-2023
