@@ -9,6 +9,7 @@ from chain_simulator.utilities import (
     validate_matrix_sum,
 )
 from scipy.sparse import coo_array, csc_array, csr_array
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:

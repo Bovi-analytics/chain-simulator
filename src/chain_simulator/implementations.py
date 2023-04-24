@@ -5,6 +5,7 @@ from itertools import count, product
 from typing import Generator, Iterable, Iterator, TypeVar
 
 from scipy.sparse import coo_array, csr_array, lil_array
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:

@@ -8,6 +8,7 @@ from chain_simulator.implementations import (
     chain_simulator,
 )
 from scipy.sparse import coo_array
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:

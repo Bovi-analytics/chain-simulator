@@ -4,6 +4,7 @@ from timeit import Timer
 from numpy import arange, dtype
 from numpy.random import default_rng
 from scipy.sparse import csr_array, random
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:

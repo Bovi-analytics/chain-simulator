@@ -5,6 +5,7 @@ from typing import Any
 from numpy import arange, count_nonzero, dtype
 from numpy.random import default_rng
 from numpy.typing import NDArray
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:

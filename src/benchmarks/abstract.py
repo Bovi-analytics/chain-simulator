@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Generic, Iterable, TypeVar
 
 from numpy import dtype
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
