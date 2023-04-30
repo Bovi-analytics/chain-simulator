@@ -32,6 +32,12 @@ def array_setup(array_type: str, axis_size: int, cells_to_fill: int) -> str:
     )
 
 
+def setup_array_initialized(array_type: str, axis_size: int, cells_to_fill: int) -> str:
+    initialization = f"initialised_array = {array_type:s}((data, (rows, cols)), shape=({axis_size:d}, {axis_size:d}))"
+    base_setup = array_setup(array_type, axis_size, cells_to_fill).split("\n")
+    return "\n".join([*base_setup, initialization]).lstrip()
+
+
 _T = TypeVar("_T")
 
 
@@ -78,8 +84,8 @@ def benchmark_array_construction() -> None:
     # construct_coo_init(*parameters, filename_suffix=filename_suffix)
     # construct_csc_init(*parameters, filename_suffix=filename_suffix)
     # construct_csr_init(*parameters, filename_suffix=filename_suffix)
-    iterate_dok(*parameters, filename_suffix=filename_suffix)
-    # iterate_lil(*parameters, filename_suffix=filename_suffix)
+    # convert_coo_csc(*parameters, filename_suffix=filename_suffix)
+    # convert_coo_csr(*parameters, filename_suffix=filename_suffix)
 
 
 def benchmark_array_size_blowup() -> None:
@@ -91,6 +97,31 @@ def benchmark_array_size_blowup() -> None:
     # construct_coo_init(*parameters, filename_suffix=filename_suffix)
     # construct_csc_init(*parameters, filename_suffix=filename_suffix)
     # construct_csr_init(*parameters, filename_suffix=filename_suffix)
+    convert_coo_csc(*parameters, filename_suffix=filename_suffix)
+    # convert_coo_csr(*parameters, filename_suffix=filename_suffix)
+
+
+def generic_func(func: Callable, filename_suffix, *parameters):
+    # TODO: Great function name, work in process.
+    benchmark_name = f"{func.__name__:s}_{filename_suffix:s}"
+    print(f"Benchmarking {benchmark_name} . . .")
+    benchmark_data = []
+    for parameter_combo in parameters:
+        benchmark_data.append(func(*parameter_combo))
+    csv_writer(benchmark_name, benchmark_data)
+
+
+def dummy_func(axis_size, cells_to_fill):
+    stmt = "initialised_array.tocsr()"
+    setup = setup_array_initialized("csr_array", axis_size, cells_to_fill)
+    array_info = analyze_array(stmt, setup, scipy_cs_array_info)
+    timings = run_benchmark(stmt, setup, repeats=8)
+    return {
+            **array_info,
+            "axis_size": axis_size,
+            "cells_to_fill": cells_to_fill,
+            **timings,
+    }
 
 
 def iterate_dok(*args: tuple[int, int], filename_suffix: str) -> None:
@@ -211,6 +242,48 @@ def construct_csr_init(*args: tuple[int, int], filename_suffix: str) -> None:
             }
         )
     csv_writer(f"construct_csr_init_{filename_suffix}", benchmark_data)
+
+
+def convert_coo_csc(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "initialised_array.tocsc()"
+    benchmark_data = []
+    counter = count()
+    print(f"construct_csc_init_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = setup_array_initialized("coo_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
+        timings = run_benchmark(stmt, setup, repeats=8)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"convert_coo_csc_{filename_suffix}", benchmark_data)
+
+
+def convert_coo_csr(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "initialised_array.tocsr()"
+    benchmark_data = []
+    counter = count()
+    print(f"construct_csr_init_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = setup_array_initialized("coo_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_cs_array_info)
+        timings = run_benchmark(stmt, setup, repeats=8)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"convert_coo_csr_{filename_suffix}", benchmark_data)
 
 
 if __name__ == "__main__":
