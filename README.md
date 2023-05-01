@@ -10,9 +10,21 @@ for simulating digital twins using Markov chains.
 
 
 
+# Getting started
+Install the library using pip:
+```shell
+pip install git+https://github.com/Bovi-analytics/DigitalCowSimulationPlatform@main
+```
+Or add it to your `requirements.txt` file as a dependency:
+```text
+chain-simulator @ git+https://github.com/Bovi-analytics/DigitalCowSimulationPlatform@main
+```
+
+
+
 # Contributing
-The package is written in [Python](https://www.python.org/), specifically for 
-Python 3.10 and newer. It is assumed that a supported Python interpreter is 
+This library is written in [Python](https://www.python.org/), specifically for 
+Python 3.8 and newer. It is assumed that a supported Python interpreter is 
 already installed. Dependency management is done using 
 [Hatch](https://hatch.pypa.io/latest/), make sure this tool is installed too. 
 To set up your development environment, do the following:
@@ -59,4 +71,4 @@ tox.ini = "Configuration for Tox to run tests on multiple Python versions"
 
 ------------------------
 Author: Max Nollet  
-Last updated: 21-04-2023
+Last updated: 01-05-2023
