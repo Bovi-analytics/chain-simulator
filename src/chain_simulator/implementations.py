@@ -2,18 +2,16 @@
 import sys
 from decimal import Decimal
 from itertools import count, product
-from typing import Generator, Iterable, Iterator, TypeVar
+from typing import Dict, Generator, Iterable, Iterator, Tuple, TypeVar
 
 from scipy.sparse import coo_array, csr_array, lil_array
+
+from chain_simulator.abstract import AbstractArrayAssemblerV1
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
-
-from chain_simulator.abstract import (
-    AbstractArrayAssemblerV1,
-)
 
 _T = TypeVar("_T", float, Decimal)
 
@@ -74,7 +72,7 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
         return lil_array((size, size), dtype=dtype)
 
     @classmethod
-    def states_to_index(cls, states: Iterable[str]) -> dict[str, int]:
+    def states_to_index(cls, states: Iterable[str]) -> Dict[str, int]:
         """Convert a collection of states into an index.
 
         Method which builds an index of a collection of states. This index can
@@ -87,14 +85,14 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
         :rtype: dict[str, int]
         """
         index = {}
-        for state, number in zip(states, count(), strict=False):
+        for state, number in zip(states, count()):
             index[state] = number
         return index
 
     @classmethod
     def state_combinations(
         cls, states: Iterable[str]
-    ) -> Generator[tuple[str, str], None, None]:
+    ) -> Generator[Tuple[str, str], None, None]:
         """Generate all possible combinations of states.
 
         :param states: States to generate combinations of.
@@ -106,7 +104,7 @@ class ScipyCSRAssembler(AbstractArrayAssemblerV1[csr_array]):
 
 
 def array_assembler(
-    state_count: int, probability_calculator: Iterator[tuple[int, int, _T]]
+    state_count: int, probability_calculator: Iterator[Tuple[int, int, _T]]
 ) -> coo_array:
     """Assemble an array using a state change probability generator.
 

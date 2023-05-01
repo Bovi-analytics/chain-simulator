@@ -7,7 +7,7 @@ import sys
 import warnings
 from abc import ABC, abstractmethod
 from decimal import Decimal
-from typing import Generic, TypeVar
+from typing import Generic, Tuple, TypeVar
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -33,7 +33,7 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
     __slots__ = ("_digital_twin", "_states")
 
     def __init__(
-        self: Self, digital_twin: _T, states: tuple[str, ...]
+        self: Self, digital_twin: _T, states: Tuple[str, ...]
     ) -> None:
         """Construct the facade.
 
@@ -64,7 +64,7 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
         return self._digital_twin
 
     @property
-    def states(self: Self) -> tuple[str, ...]:
+    def states(self: Self) -> Tuple[str, ...]:
         """All states a digital twin can be in.
 
         :return: All states a digital twin can be in.

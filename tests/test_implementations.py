@@ -1,6 +1,6 @@
 """Tests for module :mod:`~chain_simulator.implementations`."""
 import sys
-from typing import Iterator
+from typing import Iterator, Tuple
 
 from chain_simulator.implementations import (
     ScipyCSRAssembler,
@@ -15,7 +15,7 @@ else:
     from typing_extensions import Self
 
 
-def dummy_probability_generator() -> Iterator[tuple[int, int, float]]:
+def dummy_probability_generator() -> Iterator[Tuple[int, int, float]]:
     """Generate dummy probabilities.
 
     :return: Simple dummy probability generator.
@@ -23,7 +23,7 @@ def dummy_probability_generator() -> Iterator[tuple[int, int, float]]:
     """
     indices = range(4)
     values = [0.0, 0.0, 1.0, 0.5]
-    for index, value in zip(indices, values, strict=True):
+    for index, value in zip(indices, values):
         yield index, index, value
 
 

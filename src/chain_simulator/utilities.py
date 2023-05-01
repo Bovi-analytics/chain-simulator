@@ -5,13 +5,17 @@ matrices. These functions are written to help perform common tasks when
 working with this package.
 """
 import logging
-from typing import Any, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import scipy.sparse as sps
 
 _T = TypeVar(
-    "_T", np.ndarray[Any, Any], sps.coo_array, sps.csc_array, sps.csr_array
+    "_T",
+    np.ndarray,  # type:ignore[type-arg]
+    sps.coo_array,
+    sps.csc_array,
+    sps.csr_array,
 )
 
 _logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import csv
 import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Generic, Iterable, TypeVar
+from typing import Any, Generic, Iterable, Tuple, TypeVar
 
 from numpy import dtype
 
@@ -17,7 +17,7 @@ _T = TypeVar("_T")
 class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     @abstractmethod
-    def shape(cls: Self, array: _T) -> tuple[int, ...]:
+    def shape(cls: Self, array: _T) -> Tuple[int, ...]:
         raise NotImplementedError
 
     @classmethod
@@ -48,7 +48,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     def as_tuple(
         cls, array: _T
-    ) -> tuple[tuple[int, ...], int, int, int, dtype, int]:
+    ) -> Tuple[Tuple[int, ...], int, int, int, dtype, int]:
         return (
             cls.shape(array),
             cls.size(array),
@@ -59,7 +59,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
         )
 
     @staticmethod
-    def header() -> tuple[str, ...]:
+    def header() -> Tuple[str, ...]:
         return (
             "shape",
             "size",
@@ -79,13 +79,12 @@ def csv_writer(
     quoting: int = csv.QUOTE_MINIMAL,
 ) -> None:
     timestr = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    match delimiter:
-        case "\t":
-            extension = ".tsv"
-        case ",":
-            extension = ".csv"
-        case _:
-            extension = ".txt"
+    if delimiter == "\t":
+        extension = ".tsv"
+    elif delimiter == ",":
+        extension = ".csv"
+    else:
+        extension = ".txt"
     output_name = f"{filename}_{timestr}.{extension}"
     with open(output_name, "w", encoding="UTF-8", newline="") as file:
         writer = csv.writer(
