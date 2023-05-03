@@ -1,10 +1,15 @@
+import sys
 from timeit import Timer
 from typing import Any
 
 from numpy import arange, count_nonzero, dtype
 from numpy.random import default_rng
 from numpy.typing import NDArray
-from typing_extensions import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from benchmarks.abstract import (
     _T,

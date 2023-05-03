@@ -1,11 +1,16 @@
 import csv
+import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
 from timeit import Timer
-from typing import Any, Callable, Generic, Iterable, TypeVar
+from typing import Any, Callable, Generic, Iterable, Tuple, TypeVar
 
 from numpy import dtype
-from typing_extensions import Self
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 _T = TypeVar("_T")
 
@@ -13,7 +18,7 @@ _T = TypeVar("_T")
 class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     @abstractmethod
-    def shape(cls: Self, array: _T) -> tuple[int, ...]:
+    def shape(cls: Self, array: _T) -> Tuple[int, ...]:
         raise NotImplementedError
 
     @classmethod
@@ -44,7 +49,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     def as_tuple(
         cls, array: _T
-    ) -> tuple[tuple[int, ...], int, int, int, dtype, int]:
+    ) -> Tuple[Tuple[int, ...], int, int, int, dtype, int]:
         return (
             cls.shape(array),
             cls.size(array),
@@ -55,7 +60,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
         )
 
     @staticmethod
-    def header() -> tuple[str, ...]:
+    def header() -> Tuple[str, ...]:
         return (
             "shape",
             "size",

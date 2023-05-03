@@ -3,12 +3,16 @@
 Module which provides abstract base classes. These classes are for both
 internal implementations and for external users of this library.
 """
-
+import sys
+import warnings
 from abc import ABC, abstractmethod
 from decimal import Decimal
-from typing import Generic, TypeVar
+from typing import Generic, Tuple, TypeVar
 
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 _T = TypeVar("_T")
 
@@ -29,7 +33,7 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
     __slots__ = ("_digital_twin", "_states")
 
     def __init__(
-        self: Self, digital_twin: _T, states: tuple[str, ...]
+        self: Self, digital_twin: _T, states: Tuple[str, ...]
     ) -> None:
         """Construct the facade.
 
@@ -42,6 +46,11 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
         :param states: All possible states the digital twin can be in.
         :type states: tuple[str, ...]
         """
+        message = (
+            "This facade was once used to assemble arrays but is "
+            "replaced with a more efficient alternative!"
+        )
+        warnings.warn(message, DeprecationWarning, stacklevel=2)
         self._digital_twin = digital_twin
         self._states = states
 
@@ -55,7 +64,7 @@ class AbstractDigitalTwinFacade(ABC, Generic[_T]):
         return self._digital_twin
 
     @property
-    def states(self: Self) -> tuple[str, ...]:
+    def states(self: Self) -> Tuple[str, ...]:
         """All states a digital twin can be in.
 
         :return: All states a digital twin can be in.
@@ -102,9 +111,14 @@ class AbstractArrayAssemblerV1(ABC, Generic[_U]):
         Accepts an implementation of :class:`~AbstractDigitalTwinFacade` and
         makes stores this facade for later use.
 
-        :param probability_calculator: Digital twin facade..
+        :param probability_calculator: Digital twin facade.
         :type probability_calculator: AbstractDigitalTwinFacade[_T]
         """
+        warning = (
+            "This method of assembling arrays is inefficient and will "
+            "be removed in a future version!"
+        )
+        warnings.warn(warning, DeprecationWarning, stacklevel=2)
         self._probability_calculator = probability_calculator
 
     @property

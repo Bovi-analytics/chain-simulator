@@ -7,20 +7,23 @@ name = "chain-simulator"
 dynamic = ["version"]
 description = "Generic, highly scalable platform for simulating digital twins using Markov chains."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 keywords = []
 authors = [
     { name = "Max Nollet", email = "mjh.nollet@student.han.nl" },
 ]
 classifiers = [
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
+    "dask>=2023.4.0",
     "scipy>=1.10",
-    "typing-extensions>=4.0.1"
+    "typing-extensions>=4.0.1; python_version < '3.11'"
 ]
 
 [project.urls]
@@ -48,7 +51,7 @@ test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.10", "3.11"]
+python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.lint]
 dependencies = [
@@ -80,6 +83,7 @@ dependencies = [
     "Sphinx>=6.1",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.1",
+    "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
 api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
@@ -94,7 +98,7 @@ test = "sphinx-build -b doctest docs/source/ docs/build/html"
 
 [tool.black]
 line-length = 79
-target-version = ["py310"]
+target-version = ["py38"]
 
 
 [tool.mypy]
@@ -103,7 +107,7 @@ plugins = [
     "numpy.typing.mypy_plugin"
 ]
 [[tool.mypy.overrides]]
-module = "scipy.*"
+module = ["scipy.*", "pytest.*", "_pytest.*"]
 ignore_missing_imports = true
 
 
@@ -169,7 +173,7 @@ extend-select = [
 ]
 line-length = 79
 show-fixes = true
-target-version = "py310"
+target-version = "py38"
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
@@ -180,3 +184,14 @@ target-version = "py310"
 exclude_dirs = [
     "tests"
 ]
+
+
+[tool.towncrier]
+directory = "changelog"
+filename = "docs/source/changelog.rst"
+issue_format = "`#{issue} <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/{issue}>`_"
+name = "Chain Simulator"
+package = "chain_simulator"
+package_dir = "src"
+title_format = "{version} ({project_date})"
+wrap = true
