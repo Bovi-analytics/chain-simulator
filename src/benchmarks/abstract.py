@@ -6,6 +6,7 @@ from timeit import Timer
 from typing import Any, Callable, Generic, Iterable, Tuple, TypeVar
 
 from numpy import dtype
+from numpy.typing import DTypeLike
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -49,7 +50,7 @@ class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     def as_tuple(
         cls, array: _T
-    ) -> Tuple[Tuple[int, ...], int, int, int, dtype, int]:
+    ) -> Tuple[Tuple[int, ...], int, int, int, DTypeLike, int]:
         return (
             cls.shape(array),
             cls.size(array),
