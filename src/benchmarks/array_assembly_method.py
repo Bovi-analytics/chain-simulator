@@ -86,6 +86,8 @@ def benchmark_array_construction() -> None:
     # construct_csr_init(*parameters, filename_suffix=filename_suffix)
     # convert_coo_csc(*parameters, filename_suffix=filename_suffix)
     # convert_coo_csr(*parameters, filename_suffix=filename_suffix)
+    convert_csc_coo(*parameters, filename_suffix=filename_suffix)
+    convert_csr_coo(*parameters, filename_suffix=filename_suffix)
 
 
 def benchmark_array_size_blowup() -> None:
@@ -99,6 +101,8 @@ def benchmark_array_size_blowup() -> None:
     # construct_csr_init(*parameters, filename_suffix=filename_suffix)
     convert_coo_csc(*parameters, filename_suffix=filename_suffix)
     # convert_coo_csr(*parameters, filename_suffix=filename_suffix)
+    convert_csc_coo(*parameters, filename_suffix=filename_suffix)
+    convert_csr_coo(*parameters, filename_suffix=filename_suffix)
 
 
 def generic_func(func: Callable, filename_suffix, *parameters):
@@ -284,6 +288,48 @@ def convert_coo_csr(*args: tuple[int, int], filename_suffix: str) -> None:
             }
         )
     csv_writer(f"convert_coo_csr_{filename_suffix}", benchmark_data)
+
+
+def convert_csc_coo(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "initialised_array.tocoo()"
+    benchmark_data = []
+    counter = count()
+    print(f"convert_csc_coo_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = setup_array_initialized("csc_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_coo_array_info)
+        timings = run_benchmark(stmt, setup, repeats=8)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"convert_csc_coo_{filename_suffix}", benchmark_data)
+
+
+def convert_csr_coo(*args: tuple[int, int], filename_suffix: str) -> None:
+    stmt = "initialised_array.tocoo()"
+    benchmark_data = []
+    counter = count()
+    print(f"convert_csr_coo_{filename_suffix}")
+    for axis_size, cells_to_fill in args:
+        print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
+        setup = setup_array_initialized("csr_array", axis_size, cells_to_fill)
+        array_info = analyze_array(stmt, setup, scipy_coo_array_info)
+        timings = run_benchmark(stmt, setup, repeats=8)
+        benchmark_data.append(
+            {
+                **array_info,
+                "axis_size": axis_size,
+                "cells_to_fill": cells_to_fill,
+                **timings,
+            }
+        )
+    csv_writer(f"convert_csr_coo_{filename_suffix}", benchmark_data)
 
 
 if __name__ == "__main__":
