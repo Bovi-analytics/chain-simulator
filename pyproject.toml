@@ -114,24 +114,24 @@ ignore_missing_imports = true
 [tool.pylint.MASTER]
 disable = ["wrong-import-order"]
 load-plugins = [
+    "pylint.extensions.bad_builtin",
     "pylint.extensions.broad_try_clause",
+    "pylint.extensions.check_elif",
     "pylint.extensions.code_style",
-    "pylint.extensions.emptystring",
     "pylint.extensions.comparetozero",
     "pylint.extensions.comparison_placement",
     "pylint.extensions.confusing_elif",
-    "pylint.extensions.for_any_all",
     "pylint.extensions.consider_ternary_expression",
-    "pylint.extensions.bad_builtin",
-    "pylint.extensions.mccabe",
+    "pylint.extensions.docparams",
     "pylint.extensions.docstyle",
-    "pylint.extensions.check_elif",
+    "pylint.extensions.empty_comment",
+    "pylint.extensions.emptystring",
     "pylint.extensions.eq_without_hash",
+    "pylint.extensions.for_any_all",
+    "pylint.extensions.mccabe",
+    "pylint.extensions.overlapping_exceptions",
     "pylint.extensions.private_import",
     "pylint.extensions.redefined_variable_type",
-    "pylint.extensions.overlapping_exceptions",
-    "pylint.extensions.docparams",
-    "pylint.extensions.empty_comment",
     "pylint.extensions.set_membership",
     "pylint.extensions.while_used"
 ]
@@ -140,7 +140,7 @@ accept-no-param-doc = false
 accept-no-raise-doc = false
 accept-no-return-doc = false
 accept-no-yields-doc = false
-default-docstring-type = "sphinx"
+default-docstring-type = "numpy"
 
 
 [tool.ruff]
@@ -178,6 +178,9 @@ target-version = "py38"
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
 "test_*.py" = ["S101"]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
 
 
 [tool.bandit]
