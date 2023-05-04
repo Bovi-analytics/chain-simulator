@@ -32,7 +32,9 @@ def array_setup(array_type: str, axis_size: int, cells_to_fill: int) -> str:
     )
 
 
-def setup_array_initialized(array_type: str, axis_size: int, cells_to_fill: int) -> str:
+def setup_array_initialized(
+    array_type: str, axis_size: int, cells_to_fill: int
+) -> str:
     initialization = f"initialised_array = {array_type:s}((data, (rows, cols)), shape=({axis_size:d}, {axis_size:d}))"
     base_setup = array_setup(array_type, axis_size, cells_to_fill).split("\n")
     return "\n".join([*base_setup, initialization]).lstrip()
@@ -41,7 +43,9 @@ def setup_array_initialized(array_type: str, axis_size: int, cells_to_fill: int)
 _T = TypeVar("_T")
 
 
-def analyze_array(stmt: str, setup: str, extractor: Callable, retrieve_stmt=None):
+def analyze_array(
+    stmt: str, setup: str, extractor: Callable, retrieve_stmt=None
+):
     exec(setup)
     if retrieve_stmt:
         exec(stmt)
@@ -56,7 +60,7 @@ def name_timings(timings: Iterable[_T]) -> dict[str, _T]:
 
 
 def run_benchmark(
-        stmt: str, setup: str, number: Optional[int] = None, repeats: int = 10
+    stmt: str, setup: str, number: Optional[int] = None, repeats: int = 10
 ) -> dict[str, float]:
     timer = Timer(stmt, setup)
     if not number:
@@ -66,7 +70,7 @@ def run_benchmark(
     return {
         "number_of_executions": number,
         "number_of_repeats": repeats,
-        **name_timings(timings)
+        **name_timings(timings),
     }
 
 
@@ -77,7 +81,7 @@ def benchmark_array_construction() -> None:
     filename_suffix = "size_density"
     # Process parameter configurations for benchmarks.
     repeat_axes = np.repeat(range_axis, len(range_density))
-    array_sizes = repeat_axes ** 2
+    array_sizes = repeat_axes**2
     cells_to_fill = array_sizes * np.tile(range_density, len(range_axis))
     parameters = tuple(zip(repeat_axes, np.floor(cells_to_fill).astype(int)))
     # Run benchmarks.
@@ -91,15 +95,15 @@ def benchmark_array_construction() -> None:
 
 
 def benchmark_array_size_blowup() -> None:
-    range_axis = np.arange(2 ** 20, (2 ** 30 - 1) + (2 ** 22), 2 ** 22)
-    cells_to_fill = 2 ** 20
+    range_axis = np.arange(2**20, (2**30 - 1) + (2**22), 2**22)
+    cells_to_fill = 2**20
     filename_suffix = "size_same_density"
     parameters = tuple(zip(range_axis, repeat(cells_to_fill)))
     # Run benchmarks
     # construct_coo_init(*parameters, filename_suffix=filename_suffix)
     # construct_csc_init(*parameters, filename_suffix=filename_suffix)
     # construct_csr_init(*parameters, filename_suffix=filename_suffix)
-    convert_coo_csc(*parameters, filename_suffix=filename_suffix)
+    # convert_coo_csc(*parameters, filename_suffix=filename_suffix)
     # convert_coo_csr(*parameters, filename_suffix=filename_suffix)
     convert_csc_coo(*parameters, filename_suffix=filename_suffix)
     convert_csr_coo(*parameters, filename_suffix=filename_suffix)
@@ -121,10 +125,10 @@ def dummy_func(axis_size, cells_to_fill):
     array_info = analyze_array(stmt, setup, scipy_cs_array_info)
     timings = run_benchmark(stmt, setup, repeats=8)
     return {
-            **array_info,
-            "axis_size": axis_size,
-            "cells_to_fill": cells_to_fill,
-            **timings,
+        **array_info,
+        "axis_size": axis_size,
+        "cells_to_fill": cells_to_fill,
+        **timings,
     }
 
 
@@ -142,8 +146,9 @@ def iterate_dok(*args: tuple[int, int], filename_suffix: str) -> None:
     for axis_size, cells_to_fill in args:
         print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
         setup = array_setup("dok_array", axis_size, cells_to_fill)
-        array_info = analyze_array(stmt, setup, None,
-                                   retrieve_stmt="transition_matrix")
+        array_info = analyze_array(
+            stmt, setup, None, retrieve_stmt="transition_matrix"
+        )
 
 
 def iterate_lil(*args: tuple[int, int], filename_suffix: str) -> None:
@@ -175,7 +180,9 @@ def iterate_lil(*args: tuple[int, int], filename_suffix: str) -> None:
     for axis_size, cells_to_fill in args:
         print(f"Config {next(counter)}: {axis_size}, {cells_to_fill}")
         setup = array_setup("dok_array", axis_size, cells_to_fill)
-        array_info = analyze_array(stmt, setup, None, retrieve_stmt="transition_matrix")
+        array_info = analyze_array(
+            stmt, setup, None, retrieve_stmt="transition_matrix"
+        )
     # timer = Timer(stmt, setup)
     # data = timer.repeat(10, 10)
     # print(data)

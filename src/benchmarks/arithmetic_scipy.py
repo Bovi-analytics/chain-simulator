@@ -75,17 +75,17 @@ def benchmark_sparsity_2d():
 
 
 def assemble_sparse_array(
-        shape: tuple[int, int] = (20, 20),
-        density: float = 1,
-        format: str = "csr",
-        dtype: str = "float64"
+    shape: tuple[int, int] = (20, 20),
+    density: float = 1,
+    format: str = "csr",
+    dtype: str = "float64",
 ) -> csr_array:
     array = random(
         *shape,
         density=density,
         format=format,
         dtype=dtype,
-        random_state=default_rng(1)
+        random_state=default_rng(1),
     )
     return csr_array(array)
 

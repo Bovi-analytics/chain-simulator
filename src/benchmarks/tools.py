@@ -1,8 +1,13 @@
-from typing import Any, Iterable, TypeVar, TypedDict
+from typing import Any, Iterable, TypedDict, TypeVar
 
 from numpy import dtype, ndarray
-from scipy.sparse import coo_array, csc_array, csc_matrix, csr_array, \
-    csr_matrix
+from scipy.sparse import (
+    coo_array,
+    csc_array,
+    csc_matrix,
+    csr_array,
+    csr_matrix,
+)
 
 
 class NumpyArrayDict(TypedDict):
@@ -51,7 +56,7 @@ def numpy_array_info(array: ndarray) -> NumpyArrayDict:
         "data_nbytes": array.data.nbytes,
         "data_dtype": array.data.dtype,
         "data_itemsize": array.data.itemsize,
-        "data_size": array.data.size
+        "data_size": array.data.size,
     }
 
 
@@ -61,15 +66,15 @@ _CSLIKE = TypeVar("_CSLIKE", csc_array, csc_matrix, csr_array, csr_matrix)
 def scipy_cs_array_info(array: _CSLIKE) -> ScipyCSArrayDict:
     """Return information of a CSC or CSR array/matrix as a dictionary.
 
-        Function which maps various properties of a Compressed Sparse Column
-        (CSC) or Compressed Sparse Row (CSR) array/matrix to a dictionary.
-        Useful when writing this data to a CSV-file.
+    Function which maps various properties of a Compressed Sparse Column
+    (CSC) or Compressed Sparse Row (CSR) array/matrix to a dictionary.
+    Useful when writing this data to a CSV-file.
 
-        :param array: CSC or CSR array/matrix to map to a dictionary.
-        :type array: _CSLIKE
-        :return: Dictionary with information about the array/matrix.
-        :rtype ScipyCSArrayDict
-        """
+    :param array: CSC or CSR array/matrix to map to a dictionary.
+    :type array: _CSLIKE
+    :return: Dictionary with information about the array/matrix.
+    :rtype ScipyCSArrayDict
+    """
     return {
         "shape": array.shape,
         "size": array.size,
