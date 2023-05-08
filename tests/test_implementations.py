@@ -2,10 +2,10 @@
 import sys
 from typing import Iterator, Tuple
 
-from chain_simulator.implementations import (
+from chain_simulator._assembly import (
     array_assembler,
-    chain_simulator,
 )
+from chain_simulator._simulation import chain_simulator
 from scipy.sparse import coo_array
 
 if sys.version_info >= (3, 11):
