@@ -2,10 +2,7 @@
 import sys
 from typing import Iterator, Tuple
 
-from chain_simulator._assembly import (
-    array_assembler,
-)
-from chain_simulator._simulation import chain_simulator
+from chain_simulator._assembly import array_assembler
 from scipy.sparse import coo_array
 
 if sys.version_info >= (3, 11):
@@ -39,34 +36,6 @@ class TestArrayAssembler:
                 [0.0, 0.0, 0.0, 0.0],
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 0.5],
-            ]
-        )
-        comparison = result != expected
-        assert comparison.size <= 0
-
-
-class TestChainSimulator:
-    """Tests for :func:`~chain_simulator.implementations.chain_simulator`."""
-
-    def test_matmul_1(self: Self) -> None:
-        """Test matrix multiplication once."""
-        array = coo_array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
-        result = chain_simulator(array, 1)
-        expected = coo_array(
-            [[0.00, 0.50, 0.50], [0.00, 0.25, 0.75], [0.00, 0.00, 1.00]]
-        )
-        comparison = result != expected
-        assert comparison.size <= 0
-
-    def test_matmul_2(self: Self) -> None:
-        """Test matrix multiplication twice."""
-        array = coo_array([[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]])
-        result = chain_simulator(array, 2)
-        expected = coo_array(
-            [
-                [0.000, 0.250, 0.750],
-                [0.000, 0.125, 0.875],
-                [0.000, 0.000, 1.000],
             ]
         )
         comparison = result != expected
