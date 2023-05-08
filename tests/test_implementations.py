@@ -3,7 +3,6 @@ import sys
 from typing import Iterator, Tuple
 
 from chain_simulator.implementations import (
-    ScipyCSRAssembler,
     array_assembler,
     chain_simulator,
 )
@@ -25,41 +24,6 @@ def dummy_probability_generator() -> Iterator[Tuple[int, int, float]]:
     values = [0.0, 0.0, 1.0, 0.5]
     for index, value in zip(indices, values):
         yield index, index, value
-
-
-class TestScipyCSRAssembler:
-    """Tests for :class:`~ScipyCSRAssembler`."""
-
-    def test_state_combinations(self: Self) -> None:
-        """Test the generation of combinations."""
-        states = ("1", "2", "3")
-        combinations = list(ScipyCSRAssembler.state_combinations(states))
-        expected = [
-            ("1", "1"),
-            ("1", "2"),
-            ("1", "3"),
-            ("2", "1"),
-            ("2", "2"),
-            ("2", "3"),
-            ("3", "1"),
-            ("3", "2"),
-            ("3", "3"),
-        ]
-        assert combinations == expected
-
-    def test_allocate_array(self: Self) -> None:
-        """Test the allocation of a LIL array."""
-        array = ScipyCSRAssembler.allocate_array(50)
-        assert array.format == "lil"
-        assert array.dtype == "float64"
-        assert array.shape == (50, 50)
-
-    def test_states_to_index(self: Self) -> None:
-        """Test the conversion of states into an index."""
-        states = ("A", "B", "C")
-        index = ScipyCSRAssembler.states_to_index(states)
-        expected = {"A": 0, "B": 1, "C": 2}
-        assert index == expected
 
 
 class TestArrayAssembler:

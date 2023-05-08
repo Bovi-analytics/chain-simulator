@@ -6,7 +6,6 @@ Markov chains.
 
 from chain_simulator.abstract import AbstractDigitalTwinFacade
 from chain_simulator.implementations import (
-    ScipyCSRAssembler,
     array_assembler,
     chain_simulator,
 )
