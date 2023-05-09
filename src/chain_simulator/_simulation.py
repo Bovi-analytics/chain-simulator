@@ -1,4 +1,4 @@
-from typing import Iterator, Optional, TypeVar
+from typing import Iterator, Optional, Tuple, TypeVar
 
 from numpy import ndarray
 from scipy.sparse import (
@@ -12,8 +12,8 @@ _T = TypeVar("_T", ndarray, csc_array, csc_matrix, csr_array, csr_matrix)
 
 
 def chain_simulator(
-        transition_matrix: _T, steps: int, interval: Optional[int] = None
-) -> Iterator[tuple[_T, int]]:
+    transition_matrix: _T, steps: int, interval: Optional[int] = None
+) -> Iterator[Tuple[_T, int]]:
     """Progress a Markov chain forward in time.
 
     Method which progresses a Markov chain forward in time using a provided
@@ -27,6 +27,14 @@ def chain_simulator(
     :return: Transition matrix progressed in time.
     :rtype coo_array
     """
+    # Validate `steps` and `interval` parameters for negative values.
+    if steps <= 0:
+        raise ValueError("Value of parameter `steps` must be higher than 0!")
+    if interval and interval <= 0:
+        raise ValueError(
+            "Value of parameter `interval` must be higher than 0!"
+        )
+
     progressed_matrix = transition_matrix.copy()
     step_range = range(1, steps + 1)
     for step in step_range:
