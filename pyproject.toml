@@ -21,7 +21,6 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
-    "dask>=2023.4.0",
     "scipy>=1.10",
 ]
 
