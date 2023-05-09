@@ -1,6 +1,6 @@
-from typing import Iterator, Optional, Tuple, TypeVar
+from typing import Any, Iterator, Optional, Tuple, TypeVar
 
-from numpy import ndarray
+from numpy.typing import NDArray
 from scipy.sparse import (
     csc_array,
     csc_matrix,
@@ -8,7 +8,7 @@ from scipy.sparse import (
     csr_matrix,
 )
 
-_T = TypeVar("_T", ndarray, csc_array, csc_matrix, csr_array, csr_matrix)
+_T = TypeVar("_T", NDArray[Any], csc_array, csc_matrix, csr_array, csr_matrix)
 
 
 def chain_simulator(
