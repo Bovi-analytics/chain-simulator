@@ -1,14 +1,8 @@
 """Tests for module :mod:`~chain_simulator.implementations`."""
-import sys
 from typing import Iterator, Tuple
 
 from chain_simulator._assembly import array_assembler
 from scipy.sparse import coo_array
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 
 def dummy_probability_generator() -> Iterator[Tuple[int, int, float]]:
@@ -26,7 +20,7 @@ def dummy_probability_generator() -> Iterator[Tuple[int, int, float]]:
 class TestArrayAssembler:
     """Tests for :func:`~chain_simulator.implementations.array_assembler`."""
 
-    def test_assembly(self: Self) -> None:
+    def test_assembly(self) -> None:
         """Test simple dummy generator."""
         generator = dummy_probability_generator()
         result = array_assembler(4, generator)
