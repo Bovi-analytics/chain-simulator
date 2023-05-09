@@ -36,7 +36,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
 
     Parameters
     ----------
-    transition_matrix : Any 2d NumPy array or SciPy COO/CSC/CSR array/matrix.
+    transition_matrix : Any 2d NumPy array or SciPy COO/CSC/CSR array/matrix
         A Markov chain transition matrix.
 
     Returns
@@ -101,21 +101,55 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
 
 
 def validate_matrix_positive(transition_matrix: _T) -> bool:
-    """Validate if all numbers are positive in a transition matrix.
+    """Validate probabilities in a transition matrix for positive signs.
 
-    Markov chains do not allow negative probabilities in transition matrices,
-    although negative probabilities might slip in when calculating them. This
-    function checks a transition matrix for negative probabilities.
+    Checks whether all probabilities in `transition_matrix` are positive. In
+    case all probabilities are positive, this function evaluates TRUE. In case
+    one or more probabilities are negative, this function evaluates FALSE.
 
-    Method of validation: all probabilities in a transition matrix are checked
-    if they are less than zero. Probabilities less than zero are counted. When
-    this count is exactly 0, the transition matrix is valid. Otherwise, it is
+    Parameters
+    ----------
+    transition_matrix : Any 2d NumPy array or SciPy COO/CSC/CSR array/matrix
+        A Markov chain transition matrix.
+
+    Returns
+    -------
+    bool
+        Indication whether all probabilities in `transition_matrix` are
+        positive.
+
+    Warns
+    -----
+    #TODO: See issue #18
+
+    See Also
+    --------
+    validate_matrix_sum : Validate the sum of every row in a transition matrix.
+
+    Notes
+    -----
+    All probabilities in a transition matrix must be positive. Method of
+    validation: all probabilities in a transition matrix are checked if they
+    are less than zero. Probabilities less than zero are counted. When this
+    count is exactly 0, the transition matrix is valid. Otherwise, it is
     considered faulty.
 
-    :param transition_matrix: any NumPy/SciPy 2d-array or matrix.
-    :type transition_matrix: _T
-    :return: whether all numbers in the transition matrix are positive.
-    :rtype: bool
+    Examples
+    --------
+    Validate a valid transition matrix:
+
+    >>> import numpy as np
+    >>> valid_transition_matrix = np.array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> validate_matrix_positive(valid_transition_matrix)
+
+    Validate a faulty transition matrix a negative number in each row:
+    >>> invalid_transition_matrix = np.array(
+    ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
+    ... )
+    >>> validate_matrix_positive(invalid_transition_matrix)
+    False
     """
     _logger.debug(
         "Validating probability signs of transition matrix %s.",
