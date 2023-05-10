@@ -1,1 +1,1 @@
-"""All tests for the chainsimulator library."""
+"""All tests for the chain_simulator library."""

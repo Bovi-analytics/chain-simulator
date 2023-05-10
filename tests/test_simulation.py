@@ -4,12 +4,18 @@ from itertools import zip_longest
 
 import numpy as np
 import pytest
-from chain_simulator import chain_simulator
 from numpy.typing import NDArray
-from pytest import fixture
+from scipy import sparse
+
+try:
+    import cupyx as cpx
+except ImportError:
+    cpx = None
+
+from chain_simulator._simulation import ArrayProcessor, chain_simulator
 
 
-@fixture
+@pytest.fixture
 def numpy_array() -> NDArray[np.float32]:
     """Prepare a NumPy array.
 
@@ -131,3 +137,31 @@ class TestNumPy:
         assert len(arrays_actual) == 2
         assert all(comparisons)
         assert steps_actual == steps_expected
+
+
+class TestArrayProcessor:
+    numpy_initial_state_vector = np.array([1, 0, 0])
+    numpy_final_state_vector = np.array([0, 0.5, 0.5])
+
+    scipy_sparse_supported = (
+        sparse.coo_array,
+        sparse.coo_matrix,
+        sparse.csc_array,
+        sparse.csc_matrix,
+        sparse.csr_array,
+        sparse.csr_matrix,
+    )
+
+    def test_numpy_ndarray(self, numpy_array):
+        result = next(
+            ArrayProcessor(numpy_array, self.numpy_initial_state_vector, 1)
+        )
+        assert np.all(result[0] == self.numpy_final_state_vector)
+
+    @pytest.mark.parametrize("sparse_format", scipy_sparse_supported)
+    def test_scipy_csc_array(self, sparse_format, numpy_array):
+        sparse_matrix = sparse_format(numpy_array)
+        result = next(
+            ArrayProcessor(sparse_matrix, self.numpy_initial_state_vector, 1)
+        )
+        assert np.all(result[0] == self.numpy_final_state_vector)
