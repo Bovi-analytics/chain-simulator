@@ -20,9 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = [
-    "scipy>=1.10",
-]
+dependencies = ["scipy>=1.10"]
+
+[project.optional-dependencies]
+gpu = ["cupy"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
@@ -32,6 +33,7 @@ Source = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
 path = "src/chain_simulator/__about__.py"
 
 [tool.hatch.envs.default]
+description = "Default development environment"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
@@ -48,10 +50,15 @@ cov-report = [
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 
+[tool.hatch.envs.gpu]
+description = "Development environment for GPU support"
+features = ["gpu"]
+
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.lint]
+description = "Environment for formatting code and static type checking"
 dependencies = [
     "black>=23.1.0",
     "docformatter>=1.5",
@@ -76,6 +83,7 @@ style = [
 typing = "mypy --install-types --non-interactive {args:src/chain_simulator}"
 
 [tool.hatch.envs.docs]
+description = "Environment for writing documentation using Sphinx"
 dependencies = [
     "furo>=2023.0",
     "sphinx-autobuild>=2021.3.14",
@@ -101,9 +109,7 @@ target-version = ["py38"]
 
 [tool.mypy]
 strict = true
-plugins = [
-    "numpy.typing.mypy_plugin"
-]
+plugins = ["numpy.typing.mypy_plugin"]
 [[tool.mypy.overrides]]
 module = ["scipy.*", "pytest.*", "_pytest.*"]
 ignore_missing_imports = true
@@ -131,7 +137,7 @@ load-plugins = [
     "pylint.extensions.private_import",
     "pylint.extensions.redefined_variable_type",
     "pylint.extensions.set_membership",
-    "pylint.extensions.while_used"
+    "pylint.extensions.while_used",
 ]
 max-complexity = 10
 accept-no-param-doc = false
@@ -168,7 +174,7 @@ extend-select = [
     "T20",
     "TCH",
     "TID",
-    "YTT"
+    "YTT",
 ]
 line-length = 79
 show-fixes = true
@@ -183,9 +189,7 @@ convention = "numpy"
 
 
 [tool.bandit]
-exclude_dirs = [
-    "tests"
-]
+exclude_dirs = ["tests"]
 
 
 [tool.towncrier]
