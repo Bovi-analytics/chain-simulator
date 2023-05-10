@@ -1,5 +1,4 @@
 """Tests for module :mod:`~chain_simulator.utilities`."""
-import sys
 
 import numpy as np
 import numpy.typing as npt
@@ -9,11 +8,6 @@ from chain_simulator.utilities import (
     validate_matrix_sum,
 )
 from scipy.sparse import coo_array, csc_array, csr_array
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 TestingArray = npt.NDArray[np.int32]
 
@@ -129,28 +123,28 @@ def scipy_csr_array_negative() -> csr_array:
 class TestTransitionMatrixSum:
     """Test for :func:`~validate_matrix_sum` using NumPy ndarray."""
 
-    def test_sum_to_one(self: Self) -> None:
+    def test_sum_to_one(self) -> None:
         """Test if all rows sum to exactly one."""
         assert validate_matrix_sum(numpy_ndarray_valid())
         assert validate_matrix_sum(scipy_coo_array_valid())
         assert validate_matrix_sum(scipy_csc_array_valid())
         assert validate_matrix_sum(scipy_csr_array_valid())
 
-    def test_all_zero(self: Self) -> None:
+    def test_all_zero(self) -> None:
         """Test when all rows sum to exactly zero."""
         assert not validate_matrix_sum(numpy_ndarray_zero())
         assert not validate_matrix_sum(scipy_coo_array_zero())
         assert not validate_matrix_sum(scipy_csc_array_zeroes())
         assert not validate_matrix_sum(scipy_csr_array_zero())
 
-    def test_negative(self: Self) -> None:
+    def test_negative(self) -> None:
         """Test when all rows sum to exactly one but with negative numbers."""
         assert not validate_matrix_sum(numpy_ndarray_negative())
         assert not validate_matrix_sum(scipy_coo_array_negative())
         assert not validate_matrix_sum(scipy_csc_array_negative())
         assert not validate_matrix_sum(scipy_csr_array_negative())
 
-    def test_logging_message(self: Self, caplog: LogCaptureFixture) -> None:
+    def test_logging_message(self, caplog: LogCaptureFixture) -> None:
         """Test whether a warning message is emitted."""
         array = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 1]])
         validate_matrix_sum(array)
@@ -163,21 +157,21 @@ class TestTransitionMatrixSum:
 class TestTransitionMatrixPositive:
     """Tests for :func:`~validate_matrix_positive`."""
 
-    def test_all_positive(self: Self) -> None:
+    def test_all_positive(self) -> None:
         """Test when all numbers are positive."""
         assert validate_matrix_positive(numpy_ndarray_valid())
         assert validate_matrix_positive(scipy_coo_array_valid())
         assert validate_matrix_positive(scipy_csc_array_valid())
         assert validate_matrix_positive(scipy_csr_array_valid())
 
-    def test_negative(self: Self) -> None:
+    def test_negative(self) -> None:
         """Test when three rows contain a single negative number."""
         assert not validate_matrix_positive(numpy_ndarray_negative())
         assert not validate_matrix_positive(scipy_coo_array_negative())
         assert not validate_matrix_positive(scipy_csc_array_negative())
         assert not validate_matrix_positive(scipy_csr_array_negative())
 
-    def test_logging_message(self: Self, caplog: LogCaptureFixture) -> None:
+    def test_logging_message(self, caplog: LogCaptureFixture) -> None:
         """Test whether a warning message is emitted.
 
         :param caplog: Object with logs captured from console.
