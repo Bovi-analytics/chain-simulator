@@ -24,8 +24,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    _T = TypeVar(
-        "_T",
+    MATRIX_DOT_SUPPORT = TypeVar(
+        "MATRIX_DOT_SUPPORT",
         NDArray[Any],
         sparse.csc_array,
         sparse.csc_matrix,
@@ -33,6 +33,11 @@ if TYPE_CHECKING:
         sparse.csr_matrix,
         _cupyx.scipy.sparse.csc_matrix,
         _cupyx.scipy.sparse.csr_matrix,
+    )
+    STATE_VECTOR = TypeVar(
+        "STATE_VECTOR",
+        NDArray[Any],
+        _cupy.ndarray,
     )
     SCIPY_SPARSE_MATRIX = TypeVar(
         "SCIPY_SPARSE_MATRIX",
@@ -47,11 +52,25 @@ if TYPE_CHECKING:
         _cupyx.scipy.sparse.csc_matrix,
         _cupyx.scipy.sparse.csr_matrix,
     )
+    TRANSITION_MATRIX = TypeVar(
+        "TRANSITION_MATRIX",
+        NDArray[Any],
+        sparse.csc_array,
+        sparse.csc_matrix,
+        sparse.csr_array,
+        sparse.csr_matrix,
+        sparse.coo_array,
+        sparse.coo_matrix,
+        _cupyx.scipy.sparse.csc_matrix,
+        _cupyx.scipy.sparse.csr_matrix,
+    )
 
 
 def chain_simulator(
-    transition_matrix: "_T", steps: "int", interval: "Optional[int]" = None
-) -> "Iterator[Tuple[_T, int]]":
+    transition_matrix: "MATRIX_DOT_SUPPORT",
+    steps: "int",
+    interval: "Optional[int]" = None,
+) -> "Iterator[Tuple[MATRIX_DOT_SUPPORT, int]]":
     """Progress a Markov chain forward in time.
 
     Progress a Markov chain by `steps` units of time. Each yield will contain
@@ -152,8 +171,8 @@ def vector_processor_numpy(
 
 
 def vector_processor_scipy(
-    state_vector: "SCIPY_SPARSE_MATRIX",
-    transition_matrix: "NDArray[Any]",
+    state_vector: "NDArray[Any]",
+    transition_matrix: "SCIPY_SPARSE_MATRIX",
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
@@ -184,8 +203,8 @@ def vector_processor_scipy(
 
 
 def vector_processor_cupy(
-    state_vector: "CUPY_MATRIX",
-    transition_matrix: "NDArray[Any]",
+    state_vector: "_cupy.ndarray",
+    transition_matrix: "CUPY_MATRIX",
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[_cupy.ndarray, int]]":
@@ -214,6 +233,60 @@ def vector_processor_cupy(
         ), current_step
 
 
-def state_vector_processor(state_vector, transition_matrix, steps, interval):
+def to_cupy_array(state_vector: "STATE_VECTOR") -> "_cupy.ndarray":
+    if isinstance(state_vector, np.ndarray):
+        return _cupy.array(state_vector)
+    elif isinstance(state_vector, _cupy.ndarray):
+        return state_vector
+    else:
+        raise TypeError
+
+
+def to_cupy_matrix(transition_matrix: "MATRIX_DOT_SUPPORT") -> "CUPY_MATRIX":
+    if isinstance(transition_matrix, np.ndarray):
+        return _cupy.array(transition_matrix)
+    elif isinstance(transition_matrix, (sparse.csc_array, sparse.csc_matrix)):
+        return _cupyx.scipy.sparse.csc_matrix(transition_matrix)
+    elif isinstance(transition_matrix, (sparse.csr_array, sparse.csr_matrix)):
+        return _cupyx.scipy.sparse.csr_matrix(transition_matrix)
+    elif isinstance(
+        transition_matrix,
+        (
+            _cupy.ndarray,
+            _cupyx.scipy.sparse.csc_matrix,
+            _cupyx.scipy.sparse.csr_matrix,
+        ),
+    ):
+        return transition_matrix
+    else:
+        raise TypeError
+
+
+def state_vector_processor(
+    state_vector: "STATE_VECTOR",
+    transition_matrix: "TRANSITION_MATRIX",
+    steps: "int",
+    interval: "Optional[int]" = None,
+) -> "Iterator[Tuple[NDArray[Any], int]]":
+    if isinstance(transition_matrix, (sparse.coo_array, sparse.coo_matrix)):
+        transition_matrix = transition_matrix.tocsr()
+    # Make use of a GPU using CuPy when the library is installed.
     if _cupy_installed:
-        pass
+        cupy_vector = to_cupy_array(state_vector)
+        try:
+            cupy_matrix = to_cupy_matrix(transition_matrix)
+        except TypeError as err:
+            raise TypeError from err
+        simulator = vector_processor_cupy(
+            cupy_vector, cupy_matrix, steps, interval
+        )
+        for progressed_matrix, current_step in simulator:
+            yield progressed_matrix.get(), current_step
+    elif sparse.issparse(transition_matrix):
+        return vector_processor_scipy(
+            state_vector, transition_matrix, steps, interval
+        )
+    else:
+        return vector_processor_numpy(
+            state_vector, transition_matrix, steps, interval
+        )

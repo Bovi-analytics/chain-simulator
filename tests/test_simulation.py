@@ -19,9 +19,14 @@ else:
 
 from chain_simulator._simulation import (
     chain_simulator,
+    state_vector_processor,
     vector_processor_cupy,
     vector_processor_numpy,
     vector_processor_scipy,
+)
+
+SKIP_CUPY_ABSENT = pytest.mark.skipif(
+    not _cupy_installed, reason="CuPy is not installed"
 )
 
 
@@ -231,3 +236,103 @@ class TestStateVectorProcessorCuPy:
     def test_cupy_supported_type(self, vec_initial, matrix):
         results = next(self.partial_processor(vec_initial, matrix))
         assert isinstance(results[0], _cupy.ndarray)
+
+    class TestStateVectorProcessor:
+        processor_final = partial(state_vector_processor, steps=3)
+        processor_intermediate_all = partial(processor_final, steps=3, interval=1)
+        processor_intermediate_second = partial(processor_final, steps=3, interval=2)
+
+        numpy_initial_vector = np.array([1, 0, 0])
+        numpy_matrix = np.array(
+            [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+        )
+
+        valid_combinations = (
+            pytest.param(
+                numpy_initial_vector,
+                numpy_matrix,
+                id="numpy.ndarray numpy.ndarray",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.csc_array(numpy_matrix),
+                id="numpy.ndarray scipy.csc_array",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.csc_matrix(numpy_matrix),
+                id="numpy.ndarray scipy.csc_matrix",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.csr_array(numpy_matrix),
+                id="numpy.ndarray scipy.csr_array",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.csr_matrix(numpy_matrix),
+                id="numpy.ndarray scipy.csr_matrix",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.coo_array(numpy_matrix),
+                id="numpy.ndarray scipy.coo_array",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                sparse.coo_matrix(numpy_matrix),
+                id="numpy.ndarray scipy.coo_matrix",
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                as_cupy_ndarray(numpy_matrix),
+                id="numpy.ndarray cupy.ndarray",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                as_cupyx_csc_matrix(sparse.csc_matrix(numpy_matrix)),
+                id="numpy.ndarray cupyx.csc_matrix",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+            pytest.param(
+                numpy_initial_vector,
+                as_cupyx_csr_matrix(sparse.csr_matrix(numpy_matrix)),
+                id="numpy.ndarray cupyx.csr_matrix",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+            pytest.param(
+                as_cupy_ndarray(numpy_initial_vector),
+                as_cupy_ndarray(numpy_matrix),
+                id="cupy.ndarray cupy.ndarray",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+            pytest.param(
+                as_cupy_ndarray(numpy_initial_vector),
+                as_cupyx_csc_matrix(sparse.csc_matrix(numpy_matrix)),
+                id="cupy.ndarray cupyx.csc_matrix",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+            pytest.param(
+                as_cupy_ndarray(numpy_initial_vector),
+                as_cupyx_csr_matrix(sparse.csr_matrix(numpy_matrix)),
+                id="cupy.ndarray cupyx.csr_matrix",
+                marks=SKIP_CUPY_ABSENT,
+            ),
+        )
+
+        @pytest.mark.parametrize("vector, matrix", valid_combinations)
+        def test_output_type(self, vector, matrix):
+            results = next(self.processor_final(vector, matrix))
+            assert isinstance(results[0], np.ndarray)
+            assert isinstance(results[1], int)
+
+        @pytest.mark.parametrize("vector, matrix", valid_combinations)
+        def test_output_no_intermediate(self, vector, matrix):
+            results = tuple(self.processor_final(vector, matrix))
+            assert len(results) == 1
+
+        @pytest.mark.parametrize("vector, matrix", valid_combinations)
+        def test_output_all_intermediate(self, vector, matrix):
+            results = tuple(self.processor_intermediate_all(vector, matrix))
+            assert len(results) == 3
