@@ -1,0 +1,1 @@
+from chain_simulator._assembly import array_assembler

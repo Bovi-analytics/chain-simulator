@@ -239,8 +239,12 @@ class TestStateVectorProcessorCuPy:
 
     class TestStateVectorProcessor:
         processor_final = partial(state_vector_processor, steps=3)
-        processor_intermediate_all = partial(processor_final, steps=3, interval=1)
-        processor_intermediate_second = partial(processor_final, steps=3, interval=2)
+        processor_intermediate_all = partial(
+            processor_final, steps=3, interval=1
+        )
+        processor_intermediate_second = partial(
+            processor_final, steps=3, interval=2
+        )
 
         numpy_initial_vector = np.array([1, 0, 0])
         numpy_matrix = np.array(

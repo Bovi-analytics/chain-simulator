@@ -65,6 +65,8 @@ if TYPE_CHECKING:
         _cupyx.scipy.sparse.csr_matrix,
     )
 
+__all__ = ["state_vector_processor"]
+
 
 def chain_simulator(
     transition_matrix: "MATRIX_DOT_SUPPORT",
@@ -119,17 +121,17 @@ def chain_simulator(
     ... )
     >>> simulator = chain_simulator(transition_matrix, 3)
     >>> next(simulator)
-    (np.array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 2)
+    (array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 3)
 
     To get all intermediary results, we can use the parameter `interval`:
 
     >>> simulator = chain_simulator(transition_matrix, 3, interval=1)
     >>> next(simulator)
-    (np.array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 1)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 1)
     >>> next(simulator)
-    (np.array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 2)
+    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 2)
     >>> next(simulator)
-    (np.array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 3)
+    (array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 3)
     """
     # Validate `steps` and `interval` parameters for negative values.
     if steps <= 0:
@@ -236,20 +238,20 @@ def vector_processor_cupy(
 def to_cupy_array(state_vector: "STATE_VECTOR") -> "_cupy.ndarray":
     if isinstance(state_vector, np.ndarray):
         return _cupy.array(state_vector)
-    elif isinstance(state_vector, _cupy.ndarray):
+    if isinstance(state_vector, _cupy.ndarray):
         return state_vector
-    else:
-        raise TypeError
+    # TODO: add meaningful error message
+    raise TypeError
 
 
 def to_cupy_matrix(transition_matrix: "MATRIX_DOT_SUPPORT") -> "CUPY_MATRIX":
     if isinstance(transition_matrix, np.ndarray):
         return _cupy.array(transition_matrix)
-    elif isinstance(transition_matrix, (sparse.csc_array, sparse.csc_matrix)):
+    if isinstance(transition_matrix, (sparse.csc_array, sparse.csc_matrix)):
         return _cupyx.scipy.sparse.csc_matrix(transition_matrix)
-    elif isinstance(transition_matrix, (sparse.csr_array, sparse.csr_matrix)):
+    if isinstance(transition_matrix, (sparse.csr_array, sparse.csr_matrix)):
         return _cupyx.scipy.sparse.csr_matrix(transition_matrix)
-    elif isinstance(
+    if isinstance(
         transition_matrix,
         (
             _cupy.ndarray,
@@ -258,8 +260,8 @@ def to_cupy_matrix(transition_matrix: "MATRIX_DOT_SUPPORT") -> "CUPY_MATRIX":
         ),
     ):
         return transition_matrix
-    else:
-        raise TypeError
+    # TODO: add meaningful error message
+    raise TypeError
 
 
 def state_vector_processor(
@@ -268,6 +270,86 @@ def state_vector_processor(
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
+    """Simulate a Markov chain and return (intermediary) state vector(s).
+
+    Dynamically simulate a Markov chain on either a Central Processing Unit
+    (CPU) or Graphics Processing Unit (GPU). The `state_vector` is multiplied
+    with the `transition_matrix`, returning an intermediate/final state vector
+    of the n-th or `step`-th step in time. By default, only a final state
+    vector is returned. Intermediate state vectors are obtained by setting
+    `interval`, which will represent every n-th intermediate state vector.
+
+    Parameters
+    ----------
+    state_vector : any 1D array
+        A 1D array with an initial state probability distribution, i.e. an
+        initial state vector.
+    transition_matrix : any 2D array
+        A 2D array with state change probabilities, i.e. a transition matrix.
+    steps : int
+        How many `steps` in time `transition_matrix` must progress.
+    interval : int, optional
+        Which n-th or `interval`-th intermediate state vector must be returned,
+        none by default.
+
+    Yields
+    ------
+    tuple of array and int
+        An intermediate/final state vector of the current step in time and
+        the current step in time.
+
+    Raises
+    ------
+    TypeError
+        If the transition matrix type is incompatible with a GPU.
+
+    See Also
+    --------
+    chain_simulator : Progress a Markov chain forward in time.
+
+    Notes
+    -----
+    There are three distinct implementations. The first implementation is
+    GPU-based, implemented with CuPy. CuPy is however an optional dependency.
+    If the library is not installed, or the state vector / transition matrix
+    format is compatible with a GPU, the function falls back to a SciPy
+    implementation. If the transition matrix is a NumPy array, the function
+    falls back to the final implementation, which is implemented using NumPy.
+
+    Vector-matrix multiplication is used with the `dot`-method. CuPy, SciPy and
+    NumPy all have their own optimised version of this method, so it is
+    important to choose the right implementation. Choosing a wrong
+    implementation results in errors (types are incompatible) and lower
+    performance (a dot product may be faster on a GPU than a CPU).
+
+    Examples
+    --------
+    Simulate a Markov chain for 3 days with a NumPy transition matrix:
+
+    >>> import numpy as np
+    >>> initial_state_vector = np.array([1, 0, 0])
+    >>> transition_matrix = np.array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> simulator = state_vector_processor(
+    ...     initial_state_vector, transition_matrix, 3
+    ... )
+    >>> next(simulator)
+    (array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 3)
+
+    Simulate a Markov chain for 2 days with a SciPy transition matrix and all
+    intermediary results:
+
+    >>> from scipy import sparse
+    >>> csc_transition_matrix = sparse.csc_array(transition_matrix)
+    >>> simulator = state_vector_processor(
+    ...     initial_state_vector, csc_transition_matrix, 2, steps=1
+    ... )
+    >>> next(simulator)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 1)
+    >>> next(simulator)
+    (np.array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 2)
+    """
     if isinstance(transition_matrix, (sparse.coo_array, sparse.coo_matrix)):
         transition_matrix = transition_matrix.tocsr()
     # Make use of a GPU using CuPy when the library is installed.
@@ -276,6 +358,7 @@ def state_vector_processor(
         try:
             cupy_matrix = to_cupy_matrix(transition_matrix)
         except TypeError as err:
+            # TODO: add meaningful error message
             raise TypeError from err
         simulator = vector_processor_cupy(
             cupy_vector, cupy_matrix, steps, interval
@@ -283,10 +366,12 @@ def state_vector_processor(
         for progressed_matrix, current_step in simulator:
             yield progressed_matrix.get(), current_step
     elif sparse.issparse(transition_matrix):
-        return vector_processor_scipy(
+        simulator = vector_processor_scipy(
             state_vector, transition_matrix, steps, interval
         )
     else:
-        return vector_processor_numpy(
+        simulator = vector_processor_numpy(
             state_vector, transition_matrix, steps, interval
         )
+    for result in simulator:
+        yield result

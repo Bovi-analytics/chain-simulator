@@ -6,6 +6,8 @@ from scipy.sparse import coo_array
 
 _T = TypeVar("_T", float, Decimal)
 
+__all__ = ["array_assembler"]
+
 
 def array_assembler(
     state_count: int, probability_calculator: Iterator[Tuple[int, int, _T]]
