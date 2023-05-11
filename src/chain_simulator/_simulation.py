@@ -14,7 +14,13 @@ else:
     _cupy_installed = True
 
 if TYPE_CHECKING:
-    from typing import Any, Iterator, Optional, Tuple, TypeVar, Union
+    from typing import (
+        Any,
+        Iterator,
+        Optional,
+        Tuple,
+        TypeVar,
+    )
 
     from numpy.typing import NDArray
 
@@ -28,15 +34,19 @@ if TYPE_CHECKING:
         _cupyx.scipy.sparse.csc_matrix,
         _cupyx.scipy.sparse.csr_matrix,
     )
-    _MATRIX_TYPES = Union[
-        NDArray[Any],
-        sparse.coo_array,
-        sparse.coo_matrix,
+    SCIPY_SPARSE_MATRIX = TypeVar(
+        "SCIPY_SPARSE_MATRIX",
         sparse.csc_array,
         sparse.csc_matrix,
         sparse.csr_array,
         sparse.csr_matrix,
-    ]
+    )
+    CUPY_MATRIX = TypeVar(
+        "CUPY_MATRIX",
+        _cupy.ndarray,
+        _cupyx.scipy.sparse.csc_matrix,
+        _cupyx.scipy.sparse.csr_matrix,
+    )
 
 
 def chain_simulator(
@@ -119,19 +129,53 @@ def chain_simulator(
     yield progressed_matrix, step_range[-1]
 
 
-def process_vector_numpy(
-    transition_matrix, state_vector, steps, interval
-):
+def vector_processor_numpy(
+    state_vector: "NDArray[Any]",
+    transition_matrix: "NDArray[Any]",
+    steps: "int",
+    interval: "Optional[int]" = None,
+) -> "Iterator[Tuple[NDArray[Any], int]]":
+    # Validate whether state vector and transition matrix are compatible types.
+    is_numpy_array = isinstance(state_vector, np.ndarray)
+    is_numpy_matrix = isinstance(transition_matrix, np.ndarray)
+    if not all([is_numpy_array, is_numpy_matrix]):
+        raise TypeError(
+            f"State vector and transition matrix should be of types "
+            f"`numpy.ndarray` and `numpy.ndarray` respectively, got "
+            f"`{type(state_vector)}` and `{type(transition_matrix)}`!"
+        )
+
+    # Multiply state vector with transition matrix for new state vector.
     simulator = chain_simulator(transition_matrix, steps, interval)
     for progressed_matrix, current_step in simulator:
         yield np.dot(state_vector, progressed_matrix), current_step
 
 
-def process_vector_scipy(
-    transition_matrix, state_vector, steps, interval
-):
-    if transition_matrix.getformat() == "coo":
-        transition_matrix = transition_matrix.tocoo()
+def vector_processor_scipy(
+    state_vector: "SCIPY_SPARSE_MATRIX",
+    transition_matrix: "NDArray[Any]",
+    steps: "int",
+    interval: "Optional[int]" = None,
+) -> "Iterator[Tuple[NDArray[Any], int]]":
+    # Validate whether state vector and transition matrix are compatible types.
+    is_numpy_array = isinstance(state_vector, np.ndarray)
+    is_scipy_matrix = isinstance(
+        transition_matrix,
+        (
+            sparse.csc_array,
+            sparse.csc_matrix,
+            sparse.csr_array,
+            sparse.csr_matrix,
+        ),
+    )
+    if not all([is_numpy_array, is_scipy_matrix]):
+        raise TypeError(
+            f"State vector and transition matrix should be of types "
+            f"`numpy.ndarray` and any SciPy CSC/CSR array/matrix respectively,"
+            f" got `{type(state_vector)}` and `{type(transition_matrix)}`!"
+        )
+
+    # Multiply state vector with transition matrix for new state vector.
     simulator = chain_simulator(transition_matrix, steps, interval)
     for progressed_matrix, current_step in simulator:
         yield sparse.spmatrix.dot(
@@ -139,43 +183,37 @@ def process_vector_scipy(
         ), current_step
 
 
-def process_vector_cupy(
-    transition_matrix, state_vector, steps, interval
-):
-    if isinstance(transition_matrix, sparse.spmatrix):
-        if (matrix_format := transition_matrix.getformat()) == "csc":
-            cupy_matrix = _cupyx.scipy.sparse.csc_matrix(transition_matrix)
-        elif matrix_format == "csr":
-            cupy_matrix = _cupyx.scipy.sparse.csr_matrix(transition_matrix)
-        elif matrix_format == "coo":
-            cupy_matrix = _cupyx.scipy.sparse.csr_matrix(transition_matrix)
-        else:
-            raise TypeError
-    elif isinstance(transition_matrix, np.ndarray):
-        cupy_matrix = _cupy.array(transition_matrix)
-    else:
-        raise TypeError
-    cupy_array = _cupy.array(state_vector)
-    simulator = chain_simulator(cupy_matrix, steps, interval)
-    for progressed_matrix, current_step in simulator:
-        yield _cupyx.scipy.sparse.spmatrix.dot(
-            cupy_array, progressed_matrix
-        ).get(), current_step
-
-
-def ArrayProcessor(
-    transition_matrix: "_MATRIX_TYPES",
-    state_vector: "NDArray[Any]",
+def vector_processor_cupy(
+    state_vector: "CUPY_MATRIX",
+    transition_matrix: "NDArray[Any]",
     steps: "int",
     interval: "Optional[int]" = None,
-) -> "Iterator[Tuple[NDArray[Any], int]]":
+) -> "Iterator[Tuple[_cupy.ndarray, int]]":
+    # Validate whether state vector and transition matrix are compatible types.
+    is_cupy_array = isinstance(state_vector, _cupy.ndarray)
+    is_cupy_matrix = isinstance(
+        state_vector,
+        (
+            _cupy.ndarray,
+            _cupyx.scipy.sparse.csc_matrix,
+            _cupyx.scipy.sparse.csr_matrix,
+        ),
+    )
+    if not all([is_cupy_array, is_cupy_matrix]):
+        raise TypeError(
+            f"State vector and transition matrix should be of types "
+            f"`cupy.ndarray` and any CuPy ndarray/CSC/CSR matrix respectively,"
+            f" got `{type(state_vector)}` and `{type(transition_matrix)}`!"
+        )
+
+    # Multiply state vector with transition matrix for new state vector.
+    simulator = chain_simulator(transition_matrix, steps, interval)
+    for progressed_matrix, current_step in simulator:
+        yield _cupyx.scipy.sparse.spmatrix.dot(
+            state_vector, progressed_matrix
+        ), current_step
+
+
+def state_vector_processor(state_vector, transition_matrix, steps, interval):
     if _cupy_installed:
-        generator = process_vector_cupy(transition_matrix, state_vector, steps, interval)
-    elif isinstance(transition_matrix, sparse.spmatrix):
-        generator = process_vector_scipy(transition_matrix, state_vector, steps, interval)
-    elif isinstance(transition_matrix, np.ndarray):
-        generator = process_vector_numpy(transition_matrix, state_vector, steps, interval)
-    else:
-        raise TypeError
-    for result in generator:
-        yield result
+        pass

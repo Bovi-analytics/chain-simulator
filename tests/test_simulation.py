@@ -1,5 +1,5 @@
 """Tests for module :mod:`~_simulation`."""
-
+from functools import partial
 from itertools import zip_longest
 
 import numpy as np
@@ -8,11 +8,21 @@ from numpy.typing import NDArray
 from scipy import sparse
 
 try:
-    import cupyx as cpx
+    import cupy as _cupy
+    import cupyx as _cupyx
 except ImportError:
-    cpx = None
+    _cupy_installed = False
+    _cupy = None
+    _cupyx = None
+else:
+    _cupy_installed = True
 
-from chain_simulator._simulation import ArrayProcessor, chain_simulator
+from chain_simulator._simulation import (
+    chain_simulator,
+    vector_processor_cupy,
+    vector_processor_numpy,
+    vector_processor_scipy,
+)
 
 
 @pytest.fixture
@@ -139,29 +149,85 @@ class TestNumPy:
         assert steps_actual == steps_expected
 
 
-class TestArrayProcessor:
-    numpy_initial_state_vector = np.array([1, 0, 0])
-    numpy_final_state_vector = np.array([0, 0.5, 0.5])
+class TestStateVectorProcessorNumPy:
+    partial_processor = partial(vector_processor_numpy, steps=3)
 
-    scipy_sparse_supported = (
-        sparse.coo_array,
-        sparse.coo_matrix,
-        sparse.csc_array,
-        sparse.csc_matrix,
-        sparse.csr_array,
-        sparse.csr_matrix,
+    numpy_initial_vector = np.array([1, 0, 0])
+    numpy_matrix = np.array(
+        [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     )
 
-    def test_numpy_ndarray(self, numpy_array):
-        result = next(
-            ArrayProcessor(numpy_array, self.numpy_initial_state_vector, 1)
-        )
-        assert np.all(result[0] == self.numpy_final_state_vector)
+    numpy_formats = ((numpy_initial_vector, numpy_matrix),)
 
-    @pytest.mark.parametrize("sparse_format", scipy_sparse_supported)
-    def test_scipy_csc_array(self, sparse_format, numpy_array):
-        sparse_matrix = sparse_format(numpy_array)
-        result = next(
-            ArrayProcessor(sparse_matrix, self.numpy_initial_state_vector, 1)
-        )
-        assert np.all(result[0] == self.numpy_final_state_vector)
+    @pytest.mark.parametrize("vec_initial, matrix", numpy_formats)
+    def test_supported_type(self, vec_initial, matrix):
+        results = next(self.partial_processor(vec_initial, matrix))
+        assert isinstance(results[0], np.ndarray)
+
+
+class TestStateVectorProcessorSciPy:
+    partial_processor = partial(vector_processor_scipy, steps=3)
+    numpy_initial_vector = np.array([1, 0, 0])
+    numpy_matrix = np.array(
+        [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    )
+
+    scipy_formats = (
+        (numpy_initial_vector, sparse.csc_array(numpy_matrix)),
+        (numpy_initial_vector, sparse.csc_matrix(numpy_matrix)),
+        (numpy_initial_vector, sparse.csr_array(numpy_matrix)),
+        (numpy_initial_vector, sparse.csr_matrix(numpy_matrix)),
+    )
+
+    @pytest.mark.parametrize("vec_initial, matrix", scipy_formats)
+    def test_scipy_supported_type(self, vec_initial, matrix):
+        results = next(self.partial_processor(vec_initial, matrix))
+        assert isinstance(results[0], np.ndarray)
+
+
+def as_cupy_ndarray(array):
+    if _cupy_installed:
+        return _cupy.array(array)
+    return None
+
+
+def as_cupyx_csc_matrix(array):
+    if _cupy_installed:
+        return _cupyx.scipy.sparse.csc_matrix(array)
+    return None
+
+
+def as_cupyx_csr_matrix(array):
+    if _cupy_installed:
+        return _cupyx.scipy.sparse.csr_matrix(array)
+    return None
+
+
+@pytest.mark.gpu
+@pytest.mark.skipif(not _cupy_installed, reason="CuPy is not installed")
+class TestStateVectorProcessorCuPy:
+    partial_processor = partial(vector_processor_cupy, steps=3)
+    numpy_initial_vector = np.array([1, 0, 0])
+    numpy_matrix = np.array(
+        [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    )
+
+    cupy_formats = (
+        (
+            as_cupy_ndarray(numpy_initial_vector),
+            as_cupy_ndarray(numpy_matrix),
+        ),
+        (
+            as_cupy_ndarray(numpy_initial_vector),
+            as_cupyx_csc_matrix(sparse.csc_matrix(numpy_matrix)),
+        ),
+        (
+            as_cupy_ndarray(numpy_initial_vector),
+            as_cupyx_csr_matrix(sparse.csr_matrix(numpy_matrix)),
+        ),
+    )
+
+    @pytest.mark.parametrize("vec_initial, matrix", cupy_formats)
+    def test_cupy_supported_type(self, vec_initial, matrix):
+        results = next(self.partial_processor(vec_initial, matrix))
+        assert isinstance(results[0], _cupy.ndarray)

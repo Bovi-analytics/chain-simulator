@@ -111,7 +111,7 @@ target-version = ["py38"]
 strict = true
 plugins = ["numpy.typing.mypy_plugin"]
 [[tool.mypy.overrides]]
-module = ["scipy.*", "pytest.*", "_pytest.*"]
+module = ["cupy.*", "cupyx.*", "scipy.*", "pytest.*", "_pytest.*"]
 ignore_missing_imports = true
 
 
