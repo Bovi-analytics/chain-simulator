@@ -357,17 +357,17 @@ class TestStateVectorProcessorCuPy:
         pytest.param(
             as_cupy_ndarray(numpy_initial_vector),
             as_cupy_ndarray(numpy_matrix),
-            id="cupy.ndarray cupy.ndarray"
+            id="cupy.ndarray cupy.ndarray",
         ),
         pytest.param(
             as_cupy_ndarray(numpy_initial_vector),
             as_cupyx_csc_matrix(sparse.csc_matrix(numpy_matrix)),
-            id="cupy.ndarray cupyx.csc_matrix"
+            id="cupy.ndarray cupyx.csc_matrix",
         ),
         pytest.param(
             as_cupy_ndarray(numpy_initial_vector),
             as_cupyx_csr_matrix(sparse.csr_matrix(numpy_matrix)),
-            id="cupy.ndarray cupyx.csr_matrix"
+            id="cupy.ndarray cupyx.csr_matrix",
         ),
     )
 
@@ -379,9 +379,7 @@ class TestStateVectorProcessorCuPy:
 
 class TestStateVectorProcessor:
     processor_final = partial(state_vector_processor, steps=3)
-    processor_intermediate_all = partial(
-        processor_final, steps=3, interval=1
-    )
+    processor_intermediate_all = partial(processor_final, steps=3, interval=1)
     processor_intermediate_second = partial(
         processor_final, steps=3, interval=2
     )
