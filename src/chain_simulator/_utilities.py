@@ -192,7 +192,8 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     warn(
         "Validator has been renamed to `validate_matrix_negative`, which "
         "provides the exact same functionality. This validator will be "
-        "removed in a future version.", DeprecationWarning
+        "removed in a future version.",
+        DeprecationWarning,
     )
     return validate_matrix_negative(transition_matrix)
 
