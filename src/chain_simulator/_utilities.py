@@ -6,6 +6,7 @@ working with this package.
 """
 import logging
 from typing import Any, TypeVar
+from warnings import warn
 
 import numpy as np
 import scipy.sparse as sps
@@ -24,6 +25,18 @@ _T = TypeVar(
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
+
+
+class TransitionMatrixWarning(Warning):
+    pass
+
+
+class TransitionMatrixSumWarning(TransitionMatrixWarning):
+    pass
+
+
+class TransitionMatrixNegativeWarning(TransitionMatrixWarning):
+    pass
 
 
 def validate_matrix_sum(transition_matrix: _T) -> bool:
@@ -46,7 +59,8 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
 
     Warns
     -----
-    #TODO: See issue #18
+    TransitionMatrixSumWarning
+        If there are any rows that do not sum t exactly 1.
 
     See Also
     --------
@@ -87,14 +101,12 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
     )
     sum_rows = transition_matrix.sum(1)
     if not (is_valid := not len(sum_rows) - sum_rows.sum()):
-        if _logger.isEnabledFor(logging.WARNING):
-            for index, sum_row in enumerate(sum_rows):
-                if sum_row != 1:
-                    _logger.warning(
-                        "Row %d sums to %f instead of 1!",
-                        index,
-                        sum_row,
-                    )
+        for index, sum_row in enumerate(sum_rows):
+            if sum_row != 1:
+                warn(
+                    "Row %d sums to %f instead of 1!" % (index, sum_row),
+                    TransitionMatrixSumWarning,
+                )
     else:
         _logger.info("Transition matrix is valid (all rows sum to 1).")
     return is_valid
@@ -120,7 +132,8 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
 
     Warns
     -----
-    #TODO: See issue #18
+    TransitionMatrixNegativeWarning
+        If there are any negative probabilities.
 
     See Also
     --------
@@ -144,7 +157,7 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     ... )
     >>> validate_matrix_positive(valid_transition_matrix)
 
-    Validate a faulty transition matrix a negative number in each row:
+    Validate a faulty transition matrix a negative probability in each row:
     >>> invalid_transition_matrix = np.array(
     ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
     ... )
@@ -161,10 +174,12 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     except AttributeError:
         is_valid = not np.any(negative)
     if not is_valid:
-        if _logger.isEnabledFor(logging.WARNING):
-            indices = np.argwhere(negative == 1)
-            for index in indices:
-                _logger.warning("Probability on index %s is negative!", index)
+        indices = np.argwhere(negative == 1)
+        for index in indices:
+            warn(
+                "Probability on index %s is negative!" % index,
+                TransitionMatrixNegativeWarning,
+            )
     else:
         _logger.info(
             "Transition matrix is valid (all probabilities are positive)."
