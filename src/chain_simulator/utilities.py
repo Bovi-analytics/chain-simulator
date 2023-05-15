@@ -1,6 +1,15 @@
-__all__ = ["validate_matrix_sum", "validate_matrix_positive"]
+__all__ = [
+    "TransitionMatrixNegativeWarning",
+    "TransitionMatrixSumWarning",
+    "validate_matrix_negative",
+    "validate_matrix_positive",
+    "validate_matrix_sum",
+]
 
 from chain_simulator._utilities import (
+    TransitionMatrixNegativeWarning,
+    TransitionMatrixSumWarning,
+    validate_matrix_negative,
     validate_matrix_positive,
     validate_matrix_sum,
 )

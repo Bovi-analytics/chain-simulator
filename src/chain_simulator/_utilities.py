@@ -112,8 +112,8 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
     return is_valid
 
 
-def validate_matrix_positive(transition_matrix: _T) -> bool:
-    """Validate probabilities in a transition matrix for positive signs.
+def validate_matrix_negative(transition_matrix: _T) -> bool:
+    """Validate probabilities in a transition matrix for negative signs.
 
     Checks whether all probabilities in `transition_matrix` are positive. In
     case all probabilities are positive, this function evaluates TRUE. In case
@@ -155,13 +155,14 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
     >>> valid_transition_matrix = np.array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
-    >>> validate_matrix_positive(valid_transition_matrix)
+    >>> validate_matrix_negative(valid_transition_matrix)
+    True
 
     Validate a faulty transition matrix a negative probability in each row:
     >>> invalid_transition_matrix = np.array(
     ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
     ... )
-    >>> validate_matrix_positive(invalid_transition_matrix)
+    >>> validate_matrix_negative(invalid_transition_matrix)
     False
     """
     _logger.debug(
@@ -185,3 +186,15 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
             "Transition matrix is valid (all probabilities are positive)."
         )
     return is_valid
+
+
+def validate_matrix_positive(transition_matrix: _T) -> bool:
+    warn(
+        "Validator has been renamed to `validate_matrix_negative`, which "
+        "provides the exact same functionality. This validator will be "
+        "removed in a future version.", DeprecationWarning
+    )
+    return validate_matrix_negative(transition_matrix)
+
+
+validate_matrix_positive.__doc__ = validate_matrix_negative.__doc__
