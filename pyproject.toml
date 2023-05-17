@@ -86,13 +86,14 @@ typing = "mypy --install-types --non-interactive {args:src/chain_simulator}"
 description = "Environment for writing documentation using Sphinx"
 dependencies = [
     "furo>=2023.0",
+    "numpydoc>=1.5.0",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.1",
     "sphinx>=6.1",
     "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
-api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
+api = "sphinx-apidoc -f -e -M -o docs/source/generated/ src/chain_simulator/"
 autobuild = "sphinx-autobuild docs/source/ docs/build/html"
 build = [
     "api",

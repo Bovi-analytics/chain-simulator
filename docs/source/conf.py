@@ -15,6 +15,7 @@ release = "1.0.0"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
@@ -35,3 +36,9 @@ html_title = "Chain simulator"
 language = "en"
 
 html_static_path = ["_static"]
+
+
+# -- Options for numpydoc ----------------------------------------------------
+# https://numpydoc.readthedocs.io/en/latest/install.html
+
+numpydoc_validation_checks = {"all"}
