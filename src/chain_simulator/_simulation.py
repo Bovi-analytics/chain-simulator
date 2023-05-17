@@ -174,6 +174,77 @@ def vector_processor_numpy(
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
+    """Process state vectors using NumPy.
+
+    Process a state vector using a NumPy implementation. This function
+    multiplies `state_vector` with `transition_matrix` to get intermediate/
+    final state vectors.
+
+    Parameters
+    ----------
+    state_vector : 1D numpy array
+        A 1D array with an initial state probability distribution, i.e. an
+        initial state vector.
+    transition_matrix : 2D numpy array
+        A 2D array with state change probabilities, i.e. a transition matrix.
+    steps : int
+        How many `steps` in time `transition_matrix` must progress.
+    interval : int, optional
+        Which n-th or `interval`-th intermediate state vector must be returned,
+        none by default.
+
+    Yields
+    ------
+    tuple of array and int
+        An intermediate/final state vector of the current step in time and
+        the current step in time.
+
+    Raises
+    ------
+    TypeError
+        If both state vector and transition matrix are not instances of
+        numpy.ndarray.
+
+    See Also
+    --------
+    chain_simulator : Progress a Markov chain forward in time.
+    vector_processor_scipy : Process state vectors using SciPy.
+    vector_processor_cupy
+    state_vector_processor
+
+    Notes
+    -----
+    When a transition matrix is not all that sparse (density > 33%) or it is
+    small enough to fit in memory, it is best to process them using a NumPy
+    implementation. This way there is no overhead of sparse format conversions
+    or sparse format storage.
+
+    This function is slightly lower-level than :func:`state_vector_processor`
+    as it does not perform any type conversions. The function
+    :func:`chain_simulator` is used to progress the transition matrix forward
+    in time.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> initial_state_vector = np.array([1, 0, 0])
+    >>> transition_matrix = np.array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> simulator = vector_processor_numpy(
+    ...     initial_state_vector, transition_matrix, 3
+    ... )
+    >>> next(simulator)
+    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+
+    >>> simulator = vector_processor_numpy(
+    ...     initial_state_vector, transition_matrix, 2, steps=1
+    ... )
+    >>> next(simulator)
+    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    >>> next(simulator)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
+    """
     # Validate whether state vector and transition matrix are compatible types.
     _logger.debug("Validating ")
     is_numpy_array = isinstance(state_vector, np.ndarray)
@@ -197,6 +268,85 @@ def vector_processor_scipy(
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
+    """Process state vectors using SciPy.
+
+    Process a state vector using a SciPy implementation. SciPy adds support for
+    processing `transition_matrix` in sparse formats. This function multiplies
+    `state_vector` with `transition_matrix` to get intermediate/final state
+    vectors.
+
+    Parameters
+    ----------
+    state_vector : 1D numpy array
+        A 1D array with an initial state probability distribution, i.e. an
+        initial state vector.
+    transition_matrix : 2D scipy sparse array/matrix
+        A 2D array with state change probabilities, i.e. a transition matrix.
+    steps : int
+        How many `steps` in time `transition_matrix` must progress.
+    interval : int, optional
+        Which n-th or `interval`-th intermediate state vector must be returned,
+        none by default.
+
+    Yields
+    ------
+    tuple of array and int
+        An intermediate/final state vector of the current step in time and
+        the current step in time.
+
+    Raises
+    ------
+    TypeError
+        If `state_vector` is not of type numpy.ndarray or `transition_matrix`
+        is not a SciPy CSC/CSR array/matrix.
+
+    See Also
+    --------
+    chain_simulator : Progress a Markov chain forward in time.
+    vector_processor_numpy : Process state vectors using NumPy.
+    vector_processor_cupy
+    state_vector_processor
+
+    Notes
+    -----
+    When a transition matrix no longer fits in memory as a dense format, sparse
+    formats from scipy.sparse are available. These sparse formats provide their
+    own vector-matrix multiplication functionality. If this is not used, a
+    sparse transition matrix is converted into a regular/dense NumPy matrix and
+    fits most likely no longer in memory.
+
+    Not all sparse formats can be used for arithmetic operations. Compressed
+    Sparse Column (CSC) and Compressed Sparse Row (CSR) formats allow for
+    efficient arithmetic operations, while COOrdinate (COO) format does not
+    support any arithmetic operations.
+
+    This function is slightly lower-level than :func:`state_vector_processor`
+    as it does not perform any type conversions. The function
+    :func:`chain_simulator` is used to progress the transition matrix forward
+    in time.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import scipy
+    >>> initial_state_vector = np.array([1, 0, 0])
+    >>> transition_matrix = scipy.sparse.csc_array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> simulator = vector_processor_numpy(
+    ...     initial_state_vector, transition_matrix, 3
+    ... )
+    >>> next(simulator)
+    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+
+    >>> simulator = vector_processor_numpy(
+    ...     initial_state_vector, transition_matrix, 2, steps=1
+    ... )
+    >>> next(simulator)
+    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    >>> next(simulator)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
+    """
     # Validate whether state vector and transition matrix are compatible types.
     is_numpy_array = isinstance(state_vector, np.ndarray)
     is_scipy_matrix = isinstance(
@@ -229,6 +379,62 @@ def vector_processor_cupy(
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[_cupy.ndarray, int]]":
+    """Process state vectors using CuPy.
+
+    Process a state vector using a CuPy implementation. CuPy adds GPU support
+    for processing `transition_matrix` in both dense and sparse formats. This
+    function multiplies `state_vector` with `transition_matrix` to get
+    intermediate/final state vectors.
+
+    Parameters
+    ----------
+    state_vector : 1D cupy array
+        A 1D array with an initial state probability distribution, i.e. an
+        initial state vector.
+    transition_matrix : 2D cupy dense/sparse array
+        A 2D array with state change probabilities, i.e. a transition matrix.
+    steps : int
+        How many `steps` in time `transition_matrix` must progress.
+    interval : int, optional
+        Which n-th or `interval`-th intermediate state vector must be returned,
+        none by default.
+
+    Yields
+    ------
+    tuple of array and int
+        An intermediate/final state vector of the current step in time and
+        the current step in time.
+
+    Raises
+    ------
+    TypeError
+        If `state_vector` is not a CuPy array or `transition_matrix` is not a
+        CuPy dense/sparse array.
+
+    See Also
+    --------
+    chain_simulator : Progress a Markov chain forward in time.
+    vector_processor_numpy : Process state vectors using NumPy.
+    vector_processor_scipy : Process state vectors using SciPy.
+    state_vector_processor
+
+    Notes
+    -----
+    When a CPU implementation is not fast enough (
+    :func:`vector_processor_numpy` or :func:`vector_processor_scipy`) and a GPU
+    is available, it is best to process a transition matrix on a GPU. GPU
+    support is enabled by installing the optional dependency CuPy and allows
+    processing of both dense and sparse matrices.
+
+    It is important that both the state vector and transition matrix are
+    already on the GPU, i.e. cupy.ndarray or cupyx.scipy.sparse.csc_matrix. If
+    one of them is not on the GPU, processing will fail.
+
+    This function is slightly lower-level than :func:`state_vector_processor`
+    as it does not perform any type conversions. The function
+    :func:`chain_simulator` is used to progress the transition matrix forward
+    in time.
+    """
     # Validate whether state vector and transition matrix are compatible types.
     is_cupy_array = isinstance(state_vector, _cupy.ndarray)
     is_cupy_matrix = isinstance(
@@ -289,7 +495,7 @@ def state_vector_processor(
     steps: "int",
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
-    """Simulate a Markov chain and return (intermediary) state vector(s).
+    """Simulate a Markov chain and return intermediary/final state vector(s).
 
     Dynamically simulate a Markov chain on either a Central Processing Unit
     (CPU) or Graphics Processing Unit (GPU). The `state_vector` is multiplied
@@ -326,12 +532,13 @@ def state_vector_processor(
     --------
     chain_simulator : Progress a Markov chain forward in time.
 
+
     Notes
     -----
     There are three distinct implementations. The first implementation is
     GPU-based, implemented with CuPy. CuPy is however an optional dependency.
     If the library is not installed, or the state vector / transition matrix
-    format is compatible with a GPU, the function falls back to a SciPy
+    format is incompatible with a GPU, the function falls back to a SciPy
     implementation. If the transition matrix is a NumPy array, the function
     falls back to the final implementation, which is implemented using NumPy.
 
@@ -354,7 +561,7 @@ def state_vector_processor(
     ...     initial_state_vector, transition_matrix, 3
     ... )
     >>> next(simulator)
-    (array([[0, 1 / 8, 7 / 8], [0, 1 / 16, 15 / 16], [0, 0, 1]]), 3)
+    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
 
     Simulate a Markov chain for 2 days with a SciPy transition matrix and all
     intermediary results:
@@ -365,9 +572,9 @@ def state_vector_processor(
     ...     initial_state_vector, csc_transition_matrix, 2, steps=1
     ... )
     >>> next(simulator)
-    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 1)
+    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
     >>> next(simulator)
-    (np.array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 2)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
     """
     if isinstance(transition_matrix, (sparse.coo_array, sparse.coo_matrix)):
         transition_matrix = transition_matrix.tocsr()
