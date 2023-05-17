@@ -5,3 +5,7 @@ Markov chains.
 """
 
 __all__ = ["simulation", "utilities"]
+
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())

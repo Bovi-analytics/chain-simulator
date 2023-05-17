@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,7 +14,7 @@ except ImportError:
 else:
     _cupy_installed = True
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing import (
         Any,
         Iterator,
@@ -65,7 +66,7 @@ if TYPE_CHECKING:
         _cupyx.scipy.sparse.csr_matrix,
     )
 
-__all__ = ["state_vector_processor"]
+_logger = logging.getLogger(__name__)
 
 
 def chain_simulator(
@@ -140,22 +141,30 @@ def chain_simulator(
     (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
     """
     # Validate `steps` and `interval` parameters for negative values.
+    _logger.debug("Validating `steps` and `interval` parameters.")
     if steps <= 0:
+        _logger.error("Invalid input: `steps` may not be a negative number!")
         raise ValueError("Value of parameter `steps` must be higher than 0!")
     if interval and interval <= 0:
+        _logger.error(
+            "Invalid input: `interval` may not be a negative number!"
+        )
         raise ValueError(
             "Value of parameter `interval` must be higher than 0!"
         )
-
+    _logger.info("Multiplying transition matrix.")
     progressed_matrix = transition_matrix.copy()
     if interval == 1:
+        _logger.debug("Yielding intermediary transition matrix 1.")
         yield progressed_matrix, 1
     step_range = range(2, steps + 1)
     for step in step_range:
         progressed_matrix = progressed_matrix.dot(transition_matrix)
         if interval and step < step_range[-1] and step % interval == 0:
+            _logger.debug("Yielding intermediary transition matrix %d", step)
             yield progressed_matrix, step
     last_step = step_range[-1] if step_range else 1
+    _logger.info("Yielding final transition matrix %d", last_step)
     yield progressed_matrix, last_step
 
 
@@ -166,6 +175,7 @@ def vector_processor_numpy(
     interval: "Optional[int]" = None,
 ) -> "Iterator[Tuple[NDArray[Any], int]]":
     # Validate whether state vector and transition matrix are compatible types.
+    _logger.debug("Validating ")
     is_numpy_array = isinstance(state_vector, np.ndarray)
     is_numpy_matrix = isinstance(transition_matrix, np.ndarray)
     if not all([is_numpy_array, is_numpy_matrix]):

@@ -24,7 +24,6 @@ _T = TypeVar(
 )
 
 _logger = logging.getLogger(__name__)
-_logger.addHandler(logging.NullHandler())
 
 
 class TransitionMatrixWarning(Warning):
@@ -106,6 +105,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
                 warn(
                     "Row %d sums to %f instead of 1!" % (index, sum_row),
                     TransitionMatrixSumWarning,
+                    stacklevel=1,
                 )
     else:
         _logger.info("Transition matrix is valid (all rows sum to 1).")
@@ -159,6 +159,7 @@ def validate_matrix_negative(transition_matrix: _T) -> bool:
     True
 
     Validate a faulty transition matrix a negative probability in each row:
+
     >>> invalid_transition_matrix = np.array(
     ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
     ... )
@@ -180,6 +181,7 @@ def validate_matrix_negative(transition_matrix: _T) -> bool:
             warn(
                 "Probability on index %s is negative!" % index,
                 TransitionMatrixNegativeWarning,
+                stacklevel=1,
             )
     else:
         _logger.info(
@@ -194,6 +196,7 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
         "provides the exact same functionality. This validator will be "
         "removed in a future version.",
         DeprecationWarning,
+        stacklevel=1,
     )
     return validate_matrix_negative(transition_matrix)
 
