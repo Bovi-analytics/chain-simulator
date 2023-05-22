@@ -23,7 +23,7 @@ classifiers = [
 dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
-gpu = ["cupy"]
+gpu = ["cupy-cuda12x"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
