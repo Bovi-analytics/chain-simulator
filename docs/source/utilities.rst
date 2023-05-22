@@ -16,7 +16,7 @@ First we make the necessary imports:
 
 .. doctest::
 
-   >>> from chain_simulator.utilities import validate_matrix_sum, validate_matrix_positive
+   >>> from chain_simulator.utilities import validate_matrix_sum, validate_matrix_negative
    >>> import numpy as np
 
 Then we create an array and validate it:

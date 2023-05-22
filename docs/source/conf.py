@@ -19,6 +19,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.duration",
+    "sphinx.ext.napoleon",
     "sphinx_copybutton",
 ]
 
