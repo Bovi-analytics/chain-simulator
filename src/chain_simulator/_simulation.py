@@ -209,7 +209,7 @@ def vector_processor_numpy(
     --------
     chain_simulator : Progress a Markov chain forward in time.
     vector_processor_scipy : Process state vectors using SciPy.
-    vector_processor_cupy
+    vector_processor_cupy : Process state vectors using CuPy.
     state_vector_processor
 
     Notes
@@ -304,16 +304,16 @@ def vector_processor_scipy(
     --------
     chain_simulator : Progress a Markov chain forward in time.
     vector_processor_numpy : Process state vectors using NumPy.
-    vector_processor_cupy
+    vector_processor_cupy : Process state vectors using CuPy.
     state_vector_processor
 
     Notes
     -----
     When a transition matrix no longer fits in memory as a dense format, sparse
-    formats from scipy.sparse are available. These sparse formats provide their
-    own vector-matrix multiplication functionality. If this is not used, a
-    sparse transition matrix is converted into a regular/dense NumPy matrix and
-    fits most likely no longer in memory.
+    formats from scipy. sparse are available. These sparse formats provide
+    their own vector-matrix multiplication functionality. If this is not used,
+    a sparse transition matrix is converted into a regular/dense NumPy matrix
+    and fits most likely no longer in memory.
 
     Not all sparse formats can be used for arithmetic operations. Compressed
     Sparse Column (CSC) and Compressed Sparse Row (CSR) formats allow for
@@ -333,13 +333,13 @@ def vector_processor_scipy(
     >>> transition_matrix = scipy.sparse.csc_array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
-    >>> simulator = vector_processor_numpy(
+    >>> simulator = vector_processor_scipy(
     ...     initial_state_vector, transition_matrix, 3
     ... )
     >>> next(simulator)
     (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
 
-    >>> simulator = vector_processor_numpy(
+    >>> simulator = vector_processor_scipy(
     ...     initial_state_vector, transition_matrix, 2, steps=1
     ... )
     >>> next(simulator)
@@ -434,6 +434,29 @@ def vector_processor_cupy(
     as it does not perform any type conversions. The function
     :func:`chain_simulator` is used to progress the transition matrix forward
     in time.
+
+    Examples
+    --------
+    >>> import cupy
+    >>> initial_state_vector = cupy.array([1, 0, 0])
+    >>> transition_matrix = cupy.array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> simulator = vector_processor_cupy(
+    ...     initial_state_vector, transition_matrix, 3
+    ... )
+    >>> next(simulator)
+    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+
+    >>> import cupyx.scipy.sparse
+    >>> csr_transition_matrix = sparse.csr_array(initial_state_vector)
+    >>> simulator = vector_processor_cupy(
+    ...     initial_state_vector, csr_transition_matrix, 2, steps=1
+    ... )
+    >>> next(simulator)
+    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    >>> next(simulator)
+    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
     """
     # Validate whether state vector and transition matrix are compatible types.
     is_cupy_array = isinstance(state_vector, _cupy.ndarray)
