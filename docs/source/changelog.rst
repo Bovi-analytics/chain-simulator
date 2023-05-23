@@ -7,6 +7,16 @@ version bump will happen once the library is out of early development stages.
 
 .. towncrier release notes start
 
+0.3.1 (2023-05-23)
+==================
+
+Features
+--------
+
+- Improved speed of matrix multiplications, output remains the same. (`#23
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/23>`_)
+
+
 0.3.0 (2023-05-22)
 ==================
 

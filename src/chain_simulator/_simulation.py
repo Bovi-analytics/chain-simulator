@@ -1,7 +1,10 @@
 import logging
+from enum import Enum, unique
+from functools import partial
 from typing import TYPE_CHECKING
 
 import numpy as np
+import scipy
 from scipy import sparse
 
 try:
@@ -21,6 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
         Optional,
         Tuple,
         TypeVar,
+        Union,
     )
 
     from numpy.typing import NDArray
@@ -166,6 +170,200 @@ def chain_simulator(
     last_step = step_range[-1] if step_range else 1
     _logger.info("Yielding final transition matrix %d", last_step)
     yield progressed_matrix, last_step
+
+
+@unique
+class DotMethod(Enum):
+    DEFAULT = "default"
+    NUMPY_DENSE = "numpy_dense"
+    SCIPY_CSC = "scipy_csc"
+    SCIPY_CSR = "scipy_csr"
+    CUPY_DENSE = "cupy_dense"
+    CUPY_CSC = "cupy_csc"
+    CUPY_CSR = "cupy_csr"
+
+
+def _valid_dot_method(method: "DotMethod") -> "bool":
+    if isinstance(method, DotMethod):
+        return True
+    raise ValueError(f"Unknown dot product method `{method.name}`.")
+
+
+def _convert_dot_method(method: "Union[str, DotMethod]") -> "DotMethod":
+    if isinstance(method, DotMethod):
+        return method
+    try:
+        return DotMethod(method)
+    except ValueError as err:
+        raise ValueError(f"Unknown dot product method `{method}`.") from err
+
+
+def get_dot_function(method: "DotMethod"):
+    dot_method_mapping = {
+        DotMethod.DEFAULT: np.dot,
+        DotMethod.NUMPY_DENSE: np.dot,
+        DotMethod.SCIPY_CSC: scipy.sparse.csc_array.dot,
+        DotMethod.SCIPY_CSR: scipy.sparse.csr_array.dot,
+    }
+    if _cupy_installed:
+        cupy_dot_mapping = {
+            DotMethod.CUPY_DENSE: _cupy.dot,
+            DotMethod.CUPY_CSC: _cupyx.scipy.sparse.csc_matrix.dot,
+            DotMethod.CUPY_CSR: _cupyx.scipy.sparse.csr_matrix.dot,
+        }
+        dot_method_mapping = {**dot_method_mapping, **cupy_dot_mapping}
+    elif "CUPY" in method.name:
+        raise ImportError("Optional dependency CuPy is not installed.")
+    dot_function = dot_method_mapping[method]
+    if dot_function is None:
+        raise IndexError(
+            f"Dot product method `{method.name}` is not assigned to a group."
+        )
+    return dot_function
+
+
+def vector_processor(
+    state_vector,
+    transition_matrix,
+    steps: int,
+    interval: "Optional[int]" = None,
+    dot_method=DotMethod.DEFAULT,
+):
+    # Input type checking and validation to prevent unrecoverable errors.
+    method = _convert_dot_method(dot_method)
+    if interval is not None:
+        if not isinstance(interval, int):
+            raise TypeError(
+                "Cannot start simulation, `interval` should be of type `int`."
+            )
+        elif interval < 1:
+            raise ValueError(
+                "Cannot start simulation, `interval` may not be smaller "
+                "than 1."
+            )
+    if not isinstance(steps, int):
+        raise TypeError(
+            "Cannot start simulation, `steps` should be of type `int`."
+        )
+    elif steps < 1:
+        raise ValueError(
+            "Cannot start simulation, `steps` may not be smaller than 1."
+        )
+    _validate_dot_types(state_vector, transition_matrix, method)
+    _validate_dot_dimensions(state_vector, transition_matrix)
+
+    dot_function = get_dot_function(method)
+    step_range = range(1, steps + 1)
+    progressed = state_vector.copy()
+    for step in step_range:
+        progressed = dot_function(progressed, transition_matrix)
+        if interval and step < step_range[-1] and step % interval == 0:
+            yield progressed, step
+    last_step = step_range[-1] if step_range else 1
+    yield progressed, last_step
+
+
+def _validate_dot_types(left, right, method: "DotMethod"):
+    try:
+        _valid_dot_method(method)
+    except ValueError as err:
+        raise ValueError(
+            f"Cannot validate arguments, invalid dot product method `{method}`"
+        ) from err
+    dot_validator_mapping = {
+        DotMethod.DEFAULT: _valid_numpy_dot_type,
+        DotMethod.NUMPY_DENSE: _valid_numpy_dot_type,
+        DotMethod.SCIPY_CSC: _valid_scipy_dot_type,
+        DotMethod.SCIPY_CSR: _valid_scipy_dot_type,
+        DotMethod.CUPY_DENSE: partial(_valid_cupy_dot_type, method=method),
+        DotMethod.CUPY_CSC: partial(_valid_cupy_dot_type, method=method),
+        DotMethod.CUPY_CSR: partial(_valid_cupy_dot_type, method=method),
+    }
+    validator = dot_validator_mapping.get(method)
+    if validator is None:
+        raise IndexError(
+            f"Dot product method `{method.name}` is not assigned to a group."
+        )
+    validator(left, right)
+
+
+def _valid_numpy_dot_type(state_vector, transition_matrix) -> "bool":
+    if isinstance(state_vector, np.ndarray):
+        if isinstance(transition_matrix, np.ndarray):
+            return True
+        raise TypeError("`transition_matrix` should be of type `np.ndarray`.")
+    raise TypeError("`state_vector` should be of type `np.ndarray`.")
+
+
+def _valid_scipy_dot_type(state_vector, transition_matrix) -> "bool":
+    if isinstance(state_vector, np.ndarray):
+        if scipy.sparse.isspmatrix_csc(
+            transition_matrix
+        ) or scipy.sparse.isspmatrix_csr(transition_matrix):
+            return True
+        raise TypeError(
+            "`transition_matrix` should be of type "
+            "`scipy.sparse.csc_array` or `scipy.sparse.csr_array`."
+        )
+    raise TypeError("`state_vector` should be of type `np.ndarray`.")
+
+
+def _valid_cupy_dot_type(left, right, method: "DotMethod") -> "bool":
+    if _cupy_installed:
+        if method == DotMethod.CUPY_DENSE:
+            if not isinstance(left, _cupy.ndarray) or not isinstance(
+                right, _cupy.ndarray
+            ):
+                raise TypeError(
+                    "Both 'left' and 'right' should be of type 'cupy.ndarray'."
+                )
+            return True
+        elif method == DotMethod.CUPY_CSC:
+            if not _cupyx.scipy.sparse.isspmatrix_csc(
+                left
+            ) and not _cupyx.scipy.sparse.isspmatrix_csc(right):
+                raise TypeError(
+                    "Either 'left' or 'right' should be of type "
+                    "'cupyx.scipy.sparse.csc_matrix' or both should be."
+                )
+            return True
+        elif method == DotMethod.CUPY_CSR:
+            if not _cupyx.scipy.sparse.isspmatrix_csr(
+                left
+            ) and not _cupyx.scipy.sparse.isspmatrix_csr(right):
+                raise TypeError(
+                    "Either 'left' or 'right' should be of type "
+                    "'cupyx.scipy.sparse.csr_matrix' or both should be."
+                )
+            return True
+        raise IndexError(
+            f"Dot product method `{method.name}` is not assigned to a group."
+        )
+    raise ImportError("Optional dependency CuPy is not installed.")
+
+
+def _validate_dot_dimensions(left, right) -> "bool":
+    if left.ndim not in [1, 2] or right.ndim not in [1, 2]:
+        raise ValueError(
+            "Both `left` and `right` should be either 1-dimensional vectors "
+            "or 2-dimensional arrays."
+        )
+    if left.ndim == 2 and right.ndim == 2 and left.shape[1] != right.shape[0]:
+        raise ValueError(
+            "The number of columns in `left` should match the number of rows "
+            "in `right` for matrix dot product."
+        )
+    if left.ndim == 1 and right.ndim == 2 and left.shape[0] != right.shape[0]:
+        raise ValueError(
+            "The length of `left` should match the number of rows in `right` "
+            "for matrix-vector multiplication."
+        )
+    if left.ndim == 2 and right.ndim == 1 and left.shape[1] != right.shape[0]:
+        raise ValueError(
+            "The number of columns in `left` should match the length of "
+            "`right` for vector-matrix multiplication."
+        )
+    return True
 
 
 def vector_processor_numpy(
@@ -609,18 +807,40 @@ def state_vector_processor(
         except TypeError as err:
             # TODO: add meaningful error message
             raise TypeError from err
-        simulator = vector_processor_cupy(
-            cupy_vector, cupy_matrix, steps, interval
+        partial_simulator = partial(
+            vector_processor,
+            state_vector=cupy_vector,
+            transition_matrix=cupy_matrix,
+            steps=steps,
+            interval=interval,
         )
+        if isinstance(cupy_matrix, _cupy.ndarray):
+            simulator = partial_simulator(dot_method=DotMethod.CUPY_DENSE)
+        elif _cupyx.scipy.sparse.isspmatrix_csc(cupy_matrix):
+            simulator = partial_simulator(dot_method=DotMethod.CUPY_CSC)
+        elif _cupyx.scipy.sparse.isspmatrix_csr(cupy_matrix):
+            simulator = partial_simulator(dot_method=DotMethod.CUPY_CSR)
         for progressed_matrix, current_step in simulator:
             yield progressed_matrix.get(), current_step
     elif sparse.issparse(transition_matrix):
-        simulator = vector_processor_scipy(
-            state_vector, transition_matrix, steps, interval
+        partial_simulator = partial(
+            vector_processor,
+            state_vector=state_vector,
+            transition_matrix=transition_matrix,
+            steps=steps,
+            interval=interval,
         )
+        if sparse.isspmatrix_csc(transition_matrix):
+            simulator = partial_simulator(dot_method=DotMethod.SCIPY_CSC)
+        elif sparse.isspmatrix_csr(transition_matrix):
+            simulator = partial_simulator(dot_method=DotMethod.SCIPY_CSR)
     else:
-        simulator = vector_processor_numpy(
-            state_vector, transition_matrix, steps, interval
+        simulator = vector_processor(
+            state_vector,
+            transition_matrix,
+            steps,
+            interval,
+            DotMethod.NUMPY_DENSE,
         )
     for result in simulator:
         yield result
