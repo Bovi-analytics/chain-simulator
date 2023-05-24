@@ -24,6 +24,7 @@ dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
 gpu = ["cupy"]
+benchmark = ["pympler"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
