@@ -24,6 +24,7 @@ dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
 gpu = ["cupy-cuda12x"]
+spark = ["pyspark>=3.4.0"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
@@ -53,6 +54,10 @@ test-cov = "coverage run -m pytest {args:tests}"
 [tool.hatch.envs.gpu]
 description = "Development environment for GPU support"
 features = ["gpu"]
+
+[tool.hatch.envs.spark]
+description = "Development environment for Apache Spark support"
+features = ["spark"]
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
