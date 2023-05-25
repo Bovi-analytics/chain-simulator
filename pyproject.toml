@@ -24,6 +24,7 @@ dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
 gpu = ["cupy-cuda12x"]
+tensorflow = ["tensorflow>=2.12"]
 spark = ["pyspark>=3.4.0"]
 
 [project.urls]
@@ -54,6 +55,17 @@ test-cov = "coverage run -m pytest {args:tests}"
 [tool.hatch.envs.gpu]
 description = "Development environment for GPU support"
 features = ["gpu"]
+
+[tool.hatch.envs.tensorflow]
+description = "Development environment for TensorFlow support"
+features = ["tensorflow"]
+
+[tool.hatch.envs.tensorflow-directml]
+description = "Development environment for TenforFlow=DirectML"
+dependencies = [
+    "tensorflow-cpu>=2.12",
+    "tensorflow-directml-plugin",
+]
 
 [tool.hatch.envs.spark]
 description = "Development environment for Apache Spark support"
