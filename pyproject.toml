@@ -23,9 +23,10 @@ classifiers = [
 dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
+dask = ["dask"]
 gpu = ["cupy-cuda12x"]
-tensorflow = ["tensorflow>=2.12"]
 spark = ["pyspark>=3.4.0"]
+tensorflow = ["tensorflow>=2.12"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
@@ -52,9 +53,22 @@ cov-report = [
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 
+[tool.hatch.envs.dask]
+dependencies = [
+    "dask-labextension",
+    "dask[diagnostics]",
+    "graphviz",
+    "jupyterlab",
+]
+features = ["dask"]
+
 [tool.hatch.envs.gpu]
 description = "Development environment for GPU support"
 features = ["gpu"]
+
+[tool.hatch.envs.spark]
+description = "Development environment for Apache Spark support"
+features = ["spark"]
 
 [tool.hatch.envs.tensorflow]
 description = "Development environment for TensorFlow support"
@@ -66,10 +80,6 @@ dependencies = [
     "tensorflow-cpu>=2.12",
     "tensorflow-directml-plugin",
 ]
-
-[tool.hatch.envs.spark]
-description = "Development environment for Apache Spark support"
-features = ["spark"]
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
