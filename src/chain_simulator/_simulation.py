@@ -112,10 +112,9 @@ def chain_simulator(
     Notes
     -----
     Transition matrices are effectively raised to the power of `steps`. This
-    means that :math:`\mathtt{transition\_matrix}^1` yields the same transition
-    matrix as the one given to this generator. This is valid as this initial
-    transition matrix already describes probabilities to transition to the next
-    step in time.
+    means that :math:`M^1` yields the same transition matrix as the one given
+    to this generator. This is valid as this initial transition matrix already
+    describes probabilities to transition to the next step in time.
 
     The function is implemented as a generator because of the need of
     intermediary transition matrices. Also, each yield contains the current
@@ -318,7 +317,7 @@ def _valid_cupy_dot_type(left, right, method: "DotMethod") -> "bool":
                     "Both 'left' and 'right' should be of type 'cupy.ndarray'."
                 )
             return True
-        elif method == DotMethod.CUPY_CSC:
+        if method == DotMethod.CUPY_CSC:
             if not _cupyx.scipy.sparse.isspmatrix_csc(
                 left
             ) and not _cupyx.scipy.sparse.isspmatrix_csc(right):
@@ -327,7 +326,7 @@ def _valid_cupy_dot_type(left, right, method: "DotMethod") -> "bool":
                     "'cupyx.scipy.sparse.csc_matrix' or both should be."
                 )
             return True
-        elif method == DotMethod.CUPY_CSR:
+        if method == DotMethod.CUPY_CSR:
             if not _cupyx.scipy.sparse.isspmatrix_csr(
                 left
             ) and not _cupyx.scipy.sparse.isspmatrix_csr(right):
