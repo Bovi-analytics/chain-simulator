@@ -1,4 +1,6 @@
 __all__ = [
+    "AccumulationError",
+    "CallbackError",
     "NoCallbackWarning",
     "TransitionMatrixNegativeWarning",
     "TransitionMatrixSumWarning",
@@ -9,6 +11,8 @@ __all__ = [
 ]
 
 from chain_simulator._utilities import (
+    AccumulationError,
+    CallbackError,
     NoCallbackWarning,
     TransitionMatrixNegativeWarning,
     TransitionMatrixSumWarning,

@@ -211,6 +211,14 @@ def validate_matrix_positive(transition_matrix: _T) -> bool:
 validate_matrix_positive.__doc__ = validate_matrix_negative.__doc__
 
 
+class CallbackError(Exception):
+    pass
+
+
+class AccumulationError(Exception):
+    pass
+
+
 def simulation_accumulator(
     vector_processor: "Iterator[Tuple[STATE_VECTOR, int]]",
     **callbacks: "Callable[[STATE_VECTOR, int], None | int | float]",
@@ -240,11 +248,11 @@ def simulation_accumulator(
     Raises
     ------
     TypeError
-        If the processor is not of type Iterable.
-    TypeError
-        If the callback signature is wrong.
-    TypeError
-        If values from callbacks cannot be summed together.
+        If the processor or callback functions have incorrect types.
+    CallbackError
+        If the callback function raises an exception.
+    AccumulationError
+        If the return value from callback function cannot be summed.
 
     Warns
     -----
@@ -270,7 +278,10 @@ def simulation_accumulator(
     be provided as key-value pairs or unpacked from a dictionary using the
     **-notation.
 
-    Intermediate/final state vectors are provided as-is from the simulation.
+    Callback functions are not required to return anything. If nothing is
+    returned, no accumulator is created. Make sure to access accumulators using
+    `.get(<callback_name>)` instead of `[<callback_name>]` to check whether an
+    accumulator was created.
 
     Callback functions should have the following signature::
 
@@ -278,6 +289,8 @@ def simulation_accumulator(
             state_vector: np.ndarray, step_in_time: int
         ) -> None | int | float:
             ...
+
+    Intermediate/final state vectors are provided as-is from the simulation.
 
     Examples
     --------
@@ -319,18 +332,47 @@ def simulation_accumulator(
     ... )
     >>> accumulated_values
     {'time_cumulative': 4.0, 'vector_sum': 10}
+
+    Callbacks using constant extra parameters can be passed using
+    `functools.partial`:
+
+    >>> import numpy as np
+    >>> from chain_simulator.simulation import state_vector_processor
+    >>> from functools import partial
+    >>> from typing import Callable
+    >>> state_vector = np.array([1, 0, 0])
+    >>> transition_matrix = np.array(
+    ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
+    ... )
+    >>> processor = state_vector_processor(
+    ...     state_vector, transition_matrix, 4, 1
+    ... )
+    >>> partial_callable: Callable = partial(lambda x, y, z: y * z, z=5)
+    >>> accumulated = simulation_accumulator(
+    ...     processor, callable_with_constant=partial_callable
+    ... )
+    >>> accumulated_values
+    {'callable_with_constant': 50}
     """
     # Check input variables to prevent unwanted errors.
     _logger.info("Start accumulating simulation data.")
     _logger.debug("Validating input parameters.")
     if not isinstance(vector_processor, Iterator):
         raise TypeError("Invalid vector_processor, expected an iterable.")
-    if not callbacks:
+    if callbacks:
+        for callback_name, callback in callbacks.items():
+            if not isinstance(callback, Callable):
+                raise TypeError(
+                    f"Callback function `{callback}` for `{callback_name}` is "
+                    f"not callable."
+                )
+    else:
         warn(
             "Nothing to accumulate, no callbacks specified.",
             NoCallbackWarning,
             stacklevel=1,
         )
+    _logger.debug("All input parameters seem OK.")
 
     accumulated_values = {}
     for vector, step_in_time in vector_processor:
@@ -341,21 +383,23 @@ def simulation_accumulator(
         for callback_name, callback in callbacks.items():
             try:
                 callback_value = callback(vector, step_in_time)
-            except TypeError as err:
-                raise TypeError(
-                    f"Could not call callback function `{callback}`, is the "
-                    f"signature right?"
+            except Exception as err:
+                _logger.exception(
+                    "Callback function `{callback}` raised an exception."
+                )
+                raise CallbackError(
+                    f"Something went wrong while calling function "
+                    f"`{callback}`."
                 ) from err
             if callback_value is not None:
                 if callback_name in accumulated_values:
                     try:
                         accumulated_values[callback_name] += callback_value
                     except TypeError as err:
-                        accumulated_value = accumulated_values[callback_name]
-                        raise TypeError(
-                            f"Could not add types `{type(accumulated_value)}` "
-                            f"and `{type(callback_value)}`, does callback "
-                            f"function `{callback}` return constant types?"
+                        _logger.exception("summation of variables went wrong.")
+                        raise AccumulationError(
+                            f"Could not accumulate value from `{callback}` "
+                            f"for `{callback_name}`."
                         ) from err
                 else:
                     _logger.debug(
