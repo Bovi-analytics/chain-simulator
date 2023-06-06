@@ -237,7 +237,7 @@ def simulation_accumulator(
         Iterator yielding a state vector and the current step in time.
     **callbacks : Callable[[numpy.ndarray, int], None | int | float]
         Callable accepting a state vector and the current step in time and
-        returning either nothing, an int, float, Decimal or Fraction.
+        returning either nothing, an int or float.
 
     Returns
     -------
@@ -261,22 +261,23 @@ def simulation_accumulator(
 
     Warnings
     --------
-    This function serves as a wrapper for :func:`state_vector_processor`. The
-    creation of this processor should be handled by the caller of this wrapper
-    function. It is important that the processor was not iterated upon before
-    calling this wrapper function. Otherwise, some state vectors cannot be
-    processed using this accumulator.
+    This function serves as a wrapper for
+    :func:`chain_simulator.simulation.state_vector_processor`. The creation of
+    this processor should be handled by the caller of this wrapper function. It
+    is important that the processor was not iterated upon before calling this
+    wrapper function. Otherwise, some state vectors cannot be processed using
+    this accumulator.
 
     See Also
     --------
-    simulation.state_vector_processor
+    chain_simulator.simulation.state_vector_processor
         Simulate a Markov chain and return intermediary/final state vector(s).
 
     Notes
     -----
     Callback functions are accepted as keyword-arguments, meaning that they can
     be provided as key-value pairs or unpacked from a dictionary using the
-    **-notation.
+    \*\*-notation.
 
     Callback functions are not required to return anything. If nothing is
     returned, no accumulator is created. Make sure to access accumulators using
@@ -314,6 +315,7 @@ def simulation_accumulator(
     {'time_cumulative': 4.0, 'vector_sum': 10}
 
     Or add callbacks to a dictionary and unpack them in the accumulator:
+
     >>> import numpy as np
     >>> from chain_simulator.simulation import state_vector_processor
     >>> state_vector = np.array([1, 0, 0])
