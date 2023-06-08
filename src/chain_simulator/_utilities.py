@@ -271,7 +271,7 @@ def simulation_accumulator(
     See Also
     --------
     chain_simulator.simulation.state_vector_processor
-        Simulate a Markov chain and return intermediary/final state vector(s).
+        Simulate a Markov chain and return intermediate/final state vector(s).
 
     Notes
     -----
