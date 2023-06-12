@@ -1,4 +1,4 @@
-"""Implementations of :mod:`~chain_simulator.abstract`."""
+"""Array assembly functionality."""
 from typing import Iterator, Tuple, TypeVar
 
 from scipy.sparse import coo_array
@@ -7,7 +7,7 @@ _T = TypeVar("_T", int, float)
 
 
 def array_assembler(
-        state_count: int, probability_calculator: Iterator[Tuple[int, int, _T]]
+    state_count: int, probability_calculator: Iterator[Tuple[int, int, _T]]
 ) -> coo_array:
     """Assemble transition matrix using a state change probability generator.
 
@@ -34,7 +34,7 @@ def array_assembler(
 
     Notes
     -----
-    This assembler iterates oer the probability generator, collects its output
+    This assembler iterates over the probability generator, collects its output
     and turns this into a SciPy COO array. The generator should yield the
     following items:
 
@@ -44,12 +44,14 @@ def array_assembler(
 
     Examples
     --------
-    Example with a dummy generator which yields probabilities along a diagonal:
+    Assemble a 3 by 3 transition matrix using a dummy generator, yielding
+    probabilities along a diagonal:
+
     >>> def dummy_generator():
     ...     for index in range(3):
     ...         yield index, index, index + 1
     >>> transition_matrix = array_assembler(3, dummy_generator())
-    >>> transition_matrix
+    >>> transition_matrix  # doctest: +NORMALIZE_WHITESPACE
     <3x3 sparse array of type '<class 'numpy.int32'>'
         with 3 stored elements in COOrdinate format>
     >>> transition_matrix.toarray()
