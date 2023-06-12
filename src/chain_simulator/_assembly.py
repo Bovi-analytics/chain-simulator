@@ -44,6 +44,7 @@ def array_assembler(
 
     Examples
     --------
+    Example with a dummy generator which yields probabilities along a diagonal:
     >>> def dummy_generator():
     ...     for index in range(3):
     ...         yield index, index, index + 1
