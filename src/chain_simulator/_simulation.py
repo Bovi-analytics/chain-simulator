@@ -131,18 +131,26 @@ def chain_simulator(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> simulator = chain_simulator(transition_matrix, 3)
-    >>> next(simulator)
-    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+    >>> next(simulator)  # doctest: +NORMALIZE_WHITESPACE
+    (array([[0.   , 0.25 , 0.75 ],
+            [0.   , 0.125, 0.875],
+            [0.   , 0.   , 1.   ]]), 3)
 
     To get all intermediary results, we can use the parameter `interval`:
 
     >>> simulator = chain_simulator(transition_matrix, 3, interval=1)
-    >>> next(simulator)
-    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
-    >>> next(simulator)
-    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
-    >>> next(simulator)
-    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+    >>> next(simulator)  # doctest: +NORMALIZE_WHITESPACE
+    (array([[0. , 1. , 0. ],
+            [0. , 0.5, 0.5],
+            [0. , 0. , 1. ]]), 1)
+    >>> next(simulator)  # doctest: +NORMALIZE_WHITESPACE
+    (array([[0.  , 0.5 , 0.5 ],
+            [0.  , 0.25, 0.75],
+            [0.  , 0.  , 1.  ]]), 2)
+    >>> next(simulator)  # doctest: +NORMALIZE_WHITESPACE
+    (array([[0.   , 0.25 , 0.75 ],
+            [0.   , 0.125, 0.875],
+            [0.   , 0.   , 1.   ]]), 3)
     """
     # Validate `steps` and `interval` parameters for negative values.
     _logger.debug("Validating `steps` and `interval` parameters.")
@@ -433,15 +441,15 @@ def vector_processor_numpy(
     ...     initial_state_vector, transition_matrix, 3
     ... )
     >>> next(simulator)
-    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+    (array([0.  , 0.25, 0.75]), 3)
 
     >>> simulator = vector_processor_numpy(
-    ...     initial_state_vector, transition_matrix, 2, steps=1
+    ...     initial_state_vector, transition_matrix, 2, interval=1
     ... )
     >>> next(simulator)
-    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    (array([0., 1., 0.]), 1)
     >>> next(simulator)
-    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
+    (array([0. , 0.5, 0.5]), 2)
     """
     # Validate whether state vector and transition matrix are compatible types.
     _logger.debug("Validating ")
@@ -535,15 +543,15 @@ def vector_processor_scipy(
     ...     initial_state_vector, transition_matrix, 3
     ... )
     >>> next(simulator)
-    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+    (array([0.  , 0.25, 0.75]), 3)
 
     >>> simulator = vector_processor_scipy(
-    ...     initial_state_vector, transition_matrix, 2, steps=1
+    ...     initial_state_vector, transition_matrix, 2, interval=1
     ... )
     >>> next(simulator)
-    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    (array([0., 1., 0.]), 1)
     >>> next(simulator)
-    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
+    (array([0. , 0.5, 0.5]), 2)
     """
     # Validate whether state vector and transition matrix are compatible types.
     is_numpy_array = isinstance(state_vector, np.ndarray)
@@ -649,7 +657,7 @@ def vector_processor_cupy(
     >>> import cupyx.scipy.sparse
     >>> csr_transition_matrix = sparse.csr_array(initial_state_vector)
     >>> simulator = vector_processor_cupy(
-    ...     initial_state_vector, csr_transition_matrix, 2, steps=1
+    ...     initial_state_vector, csr_transition_matrix, 2, interval=1
     ... )
     >>> next(simulator)
     (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
@@ -782,7 +790,7 @@ def state_vector_processor(
     ...     initial_state_vector, transition_matrix, 3
     ... )
     >>> next(simulator)
-    (array([[0, 1 / 4, 3 / 4], [0, 1 / 8, 7 / 8], [0, 0, 1]]), 3)
+    (array([0.  , 0.25, 0.75]), 3)
 
     Simulate a Markov chain for 2 days with a SciPy transition matrix and all
     intermediary results:
@@ -790,12 +798,12 @@ def state_vector_processor(
     >>> from scipy import sparse
     >>> csc_transition_matrix = sparse.csc_array(transition_matrix)
     >>> simulator = state_vector_processor(
-    ...     initial_state_vector, csc_transition_matrix, 2, steps=1
+    ...     initial_state_vector, csc_transition_matrix, 2, interval=1
     ... )
     >>> next(simulator)
-    (array([[0, 1, 0], [0, 1 / 2, 1 / 2], [0, 0, 1]]), 1)
+    (array([0., 1., 0.]), 1)
     >>> next(simulator)
-    (array([[0, 1 / 2, 1 / 2], [0, 1 / 4, 3 / 4], [0, 0, 1]]), 2)
+    (array([0. , 0.5, 0.5]), 2)
     """
     if isinstance(transition_matrix, (sparse.coo_array, sparse.coo_matrix)):
         transition_matrix = transition_matrix.tocsr()
