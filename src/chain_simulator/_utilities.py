@@ -1,9 +1,4 @@
-"""Useful utilities that can help perform common tasks.
-
-Module with small helper function for i.e. validating transition
-matrices. These functions are written to help perform common tasks when
-working with this package.
-"""
+"""Useful utilities that can help perform common tasks."""
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, Tuple, TypeVar
 from warnings import warn
@@ -86,8 +81,8 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
     --------
     Validate a valid transition matrix:
 
-    >>> import numpy as np
-    >>> valid_transition_matrix = np.array(
+    >>> from numpy import array
+    >>> valid_transition_matrix = array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> validate_matrix_sum(valid_transition_matrix)
@@ -95,7 +90,7 @@ def validate_matrix_sum(transition_matrix: _T) -> bool:
 
     Validate a faulty transition matrix where each row sums to 0:
 
-    >>> faulty_transition_matrix = np.array(
+    >>> faulty_transition_matrix = array(
     ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
     ... )
     >>> validate_matrix_sum(faulty_transition_matrix)
@@ -158,8 +153,8 @@ def validate_matrix_negative(transition_matrix: _T) -> bool:
     --------
     Validate a valid transition matrix:
 
-    >>> import numpy as np
-    >>> valid_transition_matrix = np.array(
+    >>> from numpy import array
+    >>> valid_transition_matrix = array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> validate_matrix_negative(valid_transition_matrix)
@@ -167,7 +162,7 @@ def validate_matrix_negative(transition_matrix: _T) -> bool:
 
     Validate a faulty transition matrix a negative probability in each row:
 
-    >>> invalid_transition_matrix = np.array(
+    >>> invalid_transition_matrix = array(
     ...     [[-1, 1, 0], [1, 0, -1], [0, -1, 1]]
     ... )
     >>> validate_matrix_negative(invalid_transition_matrix)
@@ -262,8 +257,7 @@ def simulation_accumulator(
     Notes
     -----
     Callback functions are accepted as keyword-arguments, meaning that they can
-    be provided as key-value pairs or unpacked from a dictionary using the
-    \*\*-notation.
+    be provided as key-value pairs or unpacked from a dictionary.
 
     Callback functions are not required to return anything. If nothing is
     returned, no accumulator is created. Make sure to access accumulators using
@@ -273,7 +267,7 @@ def simulation_accumulator(
     Callback functions should have the following signature::
 
         def callback_function(
-            state_vector: np.ndarray, step_in_time: int
+            state_vector: numpy.ndarray, step_in_time: int
         ) -> None | int | float:
             ...
 
@@ -283,10 +277,10 @@ def simulation_accumulator(
     --------
     Provide callbacks as keyword arguments:
 
-    >>> import numpy as np
+    >>> from numpy import array, sum
     >>> from chain_simulator.simulation import state_vector_processor
-    >>> state_vector = np.array([1, 0, 0])
-    >>> transition_matrix = np.array(
+    >>> state_vector = array([1, 0, 0])
+    >>> transition_matrix = array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> processor = state_vector_processor(
@@ -294,42 +288,42 @@ def simulation_accumulator(
     ... )
     >>> accumulated = simulation_accumulator(
     ...     processor,
-    ...     time_cumulative=lambda x, y: np.sum(x),
+    ...     time_cumulative=lambda x, y: sum(x),
     ...     vector_sum=lambda x, y: y
     ... )
-    >>> accumulated_values
+    >>> accumulated
     {'time_cumulative': 4.0, 'vector_sum': 10}
 
     Or add callbacks to a dictionary and unpack them in the accumulator:
 
-    >>> import numpy as np
+    >>> from numpy import array, sum
     >>> from chain_simulator.simulation import state_vector_processor
-    >>> state_vector = np.array([1, 0, 0])
-    >>> transition_matrix = np.array(
+    >>> state_vector = array([1, 0, 0])
+    >>> transition_matrix = array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> processor = state_vector_processor(
     ...     state_vector, transition_matrix, 4, 1
     ... )
     >>> callback_functions = {
-    ...     "time_cumulative": lambda x, y: np.sum(x),
+    ...     "time_cumulative": lambda x, y: sum(x),
     ...     "vector_sum": lambda x, y: y
     ... }
     >>> accumulated = simulation_accumulator(
     ...     processor, **callback_functions
     ... )
-    >>> accumulated_values
+    >>> accumulated
     {'time_cumulative': 4.0, 'vector_sum': 10}
 
     Callbacks using constant extra parameters can be passed using
     `functools.partial`:
 
-    >>> import numpy as np
+    >>> from numpy import array
     >>> from chain_simulator.simulation import state_vector_processor
     >>> from functools import partial
     >>> from typing import Callable
-    >>> state_vector = np.array([1, 0, 0])
-    >>> transition_matrix = np.array(
+    >>> state_vector = array([1, 0, 0])
+    >>> transition_matrix = array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
     ... )
     >>> processor = state_vector_processor(
@@ -339,7 +333,7 @@ def simulation_accumulator(
     >>> accumulated = simulation_accumulator(
     ...     processor, callable_with_constant=partial_callable
     ... )
-    >>> accumulated_values
+    >>> accumulated
     {'callable_with_constant': 50}
     """
     # Check input variables to prevent unwanted errors.
