@@ -23,8 +23,11 @@ classifiers = [
 dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
-gpu = ["cupy"]
 benchmark = ["pympler"]
+dask = ["dask"]
+gpu = ["cupy-cuda12x"]
+spark = ["pyspark>=3.4.0"]
+tensorflow = ["tensorflow>=2.12"]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
@@ -51,9 +54,33 @@ cov-report = [
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 
+[tool.hatch.envs.dask]
+dependencies = [
+    "dask-labextension",
+    "dask[diagnostics]",
+    "graphviz",
+    "jupyterlab",
+]
+features = ["dask"]
+
 [tool.hatch.envs.gpu]
 description = "Development environment for GPU support"
 features = ["gpu"]
+
+[tool.hatch.envs.spark]
+description = "Development environment for Apache Spark support"
+features = ["spark"]
+
+[tool.hatch.envs.tensorflow]
+description = "Development environment for TensorFlow support"
+features = ["tensorflow"]
+
+[tool.hatch.envs.tensorflow-directml]
+description = "Development environment for TenforFlow=DirectML"
+dependencies = [
+    "tensorflow-cpu>=2.12",
+    "tensorflow-directml-plugin",
+]
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
@@ -74,12 +101,12 @@ all = [
 ]
 fmt = [
     "black {args:.}",
-    "docformatter --in-place --recursive {args:src tests}",
-    "ruff --fix {args:src tests}",
+    "docformatter --in-place --recursive {args:src/chain_simulator tests}",
+    "ruff --fix {args:src/chain_simulator tests}",
 ]
 style = [
-    "ruff {args:src tests}",
-    "pylint {args:src tests}",
+    "ruff {args:src/chain_simulator tests}",
+    "pylint {args:src/chain_simulator}",
 ]
 typing = "mypy --install-types --non-interactive {args:src/chain_simulator}"
 
@@ -87,13 +114,14 @@ typing = "mypy --install-types --non-interactive {args:src/chain_simulator}"
 description = "Environment for writing documentation using Sphinx"
 dependencies = [
     "furo>=2023.0",
+    "numpydoc>=1.5.0",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.1",
     "sphinx>=6.1",
     "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
-api = "sphinx-apidoc -o docs/source/generated/ src/chain_simulator/ -M"
+api = "sphinx-apidoc -f -e -M -T -o docs/source/generated/ src/chain_simulator/"
 autobuild = "sphinx-autobuild docs/source/ docs/build/html"
 build = [
     "api",

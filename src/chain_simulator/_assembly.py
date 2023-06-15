@@ -1,30 +1,63 @@
-"""Implementations of :mod:`~chain_simulator.abstract`."""
-from decimal import Decimal
+"""Array assembly functionality."""
 from typing import Iterator, Tuple, TypeVar
 
 from scipy.sparse import coo_array
 
-_T = TypeVar("_T", float, Decimal)
-
-__all__ = ["array_assembler"]
+_T = TypeVar("_T", int, float)
 
 
 def array_assembler(
     state_count: int, probability_calculator: Iterator[Tuple[int, int, _T]]
 ) -> coo_array:
-    """Assemble an array using a state change probability generator.
+    """Assemble transition matrix using a state change probability generator.
 
-    Function which assembles a Coordinate (COO) array using a state change
-    probability generator. Per probability this generator must provide the
-    row index, column index and the probability itself in order to assemble
-    an array.
+    Assemble a transition matrix in SciPy Coordinate (COO) array format using a
+    state change probability generator. The assembler iterates over the
+    generator, collects it's output and turns this into a SciPy COO array.
 
-    :param state_count: Number/count of all possible states.
-    :type state_count: int
-    :param probability_calculator: Generator to calculate probabilities.
-    :type probability_calculator: Iterator[tuple[int, int, _T]]
-    :return: Assembled array in Coordinate (COO) format.
-    :rtype: coo_array
+    Parameters
+    ----------
+    state_count : int
+        How many states the probability generator yields.
+    probability_calculator : Iterator[Tuple[int, int, _T]]
+        Generator object yielding state change probabilities.
+
+    Returns
+    -------
+    coo_array
+        Transition matrix in SciPy COO array format.
+
+    See Also
+    --------
+    chain_simulator.simulation.state_vector_processor
+        Simulate a Markov chain and return intermediate/final state vector(s).
+
+    Notes
+    -----
+    This assembler iterates over the probability generator, collects its output
+    and turns this into a SciPy COO array. The generator should yield the
+    following items:
+
+    - row index of probability (int).
+    - column index of probability (int).
+    - actual probability itself (int or float).
+
+    Examples
+    --------
+    Assemble a 3 by 3 transition matrix using a dummy generator, yielding
+    probabilities along a diagonal:
+
+    >>> def dummy_generator():
+    ...     for index in range(3):
+    ...         yield index, index, index + 1
+    >>> transition_matrix = array_assembler(3, dummy_generator())
+    >>> transition_matrix  # doctest: +NORMALIZE_WHITESPACE
+    <3x3 sparse array of type '<class 'numpy.int32'>'
+        with 3 stored elements in COOrdinate format>
+    >>> transition_matrix.toarray()
+    array([[1, 0, 0],
+           [0, 2, 0],
+           [0, 0, 3]])
     """
     rows, cols, probabilities = [], [], []
     for row, col, probability in probability_calculator:

@@ -1,1 +1,0 @@
-Removed deprecated `chain_simulator.implementations.ScipyCSRAssembler` and `chain_simulator.abstract.AbstractArrayAssemblerV1`.
