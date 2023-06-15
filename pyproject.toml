@@ -23,7 +23,6 @@ classifiers = [
 dependencies = ["scipy>=1.10"]
 
 [project.optional-dependencies]
-benchmark = ["pympler"]
 dask = ["dask"]
 gpu = ["cupy-cuda12x"]
 spark = ["pyspark>=3.4.0"]
@@ -53,6 +52,14 @@ cov-report = [
 ]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
+
+[tool.hatch.envs.benchmark]
+description = "Environment for benchmarking"
+dependencies = [
+    "click",
+    "matplotlib",
+    "pympler",
+]
 
 [tool.hatch.envs.dask]
 dependencies = [
