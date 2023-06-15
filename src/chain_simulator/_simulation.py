@@ -782,6 +782,7 @@ def state_vector_processor(
     Simulate a Markov chain for 3 days with a NumPy transition matrix:
 
     >>> import numpy as np
+    >>> from chain_simulator.simulation import state_vector_processor
     >>> initial_state_vector = np.array([1, 0, 0])
     >>> transition_matrix = np.array(
     ...     [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
