@@ -202,15 +202,16 @@ class AccumulationError(Exception):
 
 def simulation_accumulator(
     vector_processor: "Iterator[Tuple[STATE_VECTOR, int]]",
-    **callbacks: "Callable[[STATE_VECTOR, int], None | int | float]",
+    **callbacks: "Callable[[STATE_VECTOR, int, int], None | int | float]",
 ) -> "Dict[str, None | int | float]":
     """Accumulate simulation data using callback functions.
 
     Accumulate data from intermediate/final state vectors using callback
-    functions. Callback functions must accept a state vector along with the
-    current step in time and can return either nothing, an int or float. These
-    returned values are accumulated and summed per callback function and are
-    returned after the simulation has finished.
+    functions. Callback functions must accept a state vector, the current step
+    in time and the step size (compated to the previous step). The function can
+    return either nothing, an int or float. These returned values are
+    accumulated and summed per callback function and are returned after the
+    simulation has finished.
 
     Parameters
     ----------
@@ -267,7 +268,7 @@ def simulation_accumulator(
     Callback functions should have the following signature::
 
         def callback_function(
-            state_vector: numpy.ndarray, step_in_time: int
+            state_vector: numpy.ndarray, step_in_time: int, step_size: int
         ) -> None | int | float:
             ...
 
@@ -288,8 +289,8 @@ def simulation_accumulator(
     ... )
     >>> accumulated = simulation_accumulator(
     ...     processor,
-    ...     time_cumulative=lambda x, y: sum(x),
-    ...     vector_sum=lambda x, y: y
+    ...     time_cumulative=lambda x, y, z: sum(x),
+    ...     vector_sum=lambda x, y, z: y
     ... )
     >>> accumulated
     {'time_cumulative': 4.0, 'vector_sum': 10}
@@ -306,8 +307,8 @@ def simulation_accumulator(
     ...     state_vector, transition_matrix, 4, 1
     ... )
     >>> callback_functions = {
-    ...     "time_cumulative": lambda x, y: sum(x),
-    ...     "vector_sum": lambda x, y: y
+    ...     "time_cumulative": lambda x, y, z: sum(x),
+    ...     "vector_sum": lambda x, y, z: y
     ... }
     >>> accumulated = simulation_accumulator(
     ...     processor, **callback_functions
@@ -329,7 +330,7 @@ def simulation_accumulator(
     >>> processor = state_vector_processor(
     ...     state_vector, transition_matrix, 4, 1
     ... )
-    >>> partial_callable: Callable = partial(lambda x, y, z: y * z, z=5)
+    >>> partial_callable: Callable = partial(lambda w, x, y, z: x * z, z=5)
     >>> accumulated = simulation_accumulator(
     ...     processor, callable_with_constant=partial_callable
     ... )
@@ -357,14 +358,16 @@ def simulation_accumulator(
     _logger.debug("All input parameters seem OK.")
 
     accumulated_values = {}
+    previous_step = 1
     for vector, step_in_time in vector_processor:
         _logger.debug(
             "Accumulating data for step {step_in_time} in time.",
             extra={"step_in_time": step_in_time},
         )
+        step_size = step_in_time - previous_step
         for callback_name, callback in callbacks.items():
             try:
-                callback_value = callback(vector, step_in_time)
+                callback_value = callback(vector, step_in_time, step_size)
             except Exception as err:
                 _logger.exception(
                     "Callback function `{callback}` raised an exception."
@@ -389,6 +392,7 @@ def simulation_accumulator(
                         extra={"callback_name": callback_name},
                     )
                     accumulated_values[callback_name] = callback_value
+        previous_step = step_in_time
     _logger.info(
         "Done accumulating simulation data, {current} out of {to} callbacks "
         "accumulated.",
