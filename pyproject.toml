@@ -50,9 +50,34 @@ cov-report = [
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 
+[tool.hatch.envs.dask]
+description = "Development environment for Dask support"
+dependencies = [
+    "dask",
+    "dask-labextension",
+    "dask[diagnostics]",
+    "graphviz",
+    "jupyterlab",
+]
+
 [tool.hatch.envs.gpu]
 description = "Development environment for GPU support"
 features = ["gpu"]
+
+[tool.hatch.envs.spark]
+description = "Development environment for Apache Spark support"
+dependencies = ["pyspark>=3.4.0"]
+
+[tool.hatch.envs.tensorflow]
+description = "Development environment for TensorFlow support"
+dependencies = ["tensorflow>=2.12"]
+
+[tool.hatch.envs.tensorflow-directml]
+description = "Development environment for TenforFlow=DirectML"
+dependencies = [
+    "tensorflow-cpu>=2.12",
+    "tensorflow-directml-plugin",
+]
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
@@ -93,13 +118,9 @@ dependencies = [
     "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
-api = "sphinx-apidoc -f -e -M -o docs/source/generated/ src/chain_simulator/"
+api = "sphinx-apidoc -f -e -M -o {args:docs/source/generated/} src/chain_simulator/"
 autobuild = "sphinx-autobuild docs/source/ docs/build/html"
-build = [
-    "api",
-    "test",
-    "sphinx-build -b html docs/source/ docs/build/html"
-]
+build = "sphinx-build -b html docs/source/ {args:docs/build/html}"
 test = "sphinx-build -b doctest docs/source/ docs/build/html"
 
 
