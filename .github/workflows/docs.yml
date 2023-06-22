@@ -35,9 +35,6 @@ jobs:
           pip install hatch
           hatch env create docs
 
-      - name: Build folder structure
-        run: mkdir -p /tmp/chain_simulator_pages/source
-
       - name: Build with Sphinx
         run: |
           hatch run docs:api
@@ -49,7 +46,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: /tmp/chain_simulator_pages/build
+          path: docs/build/html
 
   # Based on https://github.com/marketplace/actions/deploy-github-pages-site
   deploy:
