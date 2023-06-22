@@ -41,8 +41,9 @@ jobs:
       - name: Build with Sphinx
         run: |
           cp -r ${{ github.workspace }}/docs/source /tmp/chain_simulator_pages/source
+          ls -l
           hatch run docs:api /tmp/chain_simulator_pages/source/generated ${{ github.workspace }}/src/chain_simulator
-          hatch run docs:build /tmp/chain_simulator_pages/source /tmp/chain_simulator_pages/build
+          hatch run docs:build /tmp/chain_simulator_pages/source/ /tmp/chain_simulator_pages/build
 
       - name: Configure Pages
         uses: actions/configure-pages@v3
