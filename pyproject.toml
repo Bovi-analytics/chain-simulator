@@ -54,8 +54,13 @@ test-cov = "coverage run -m pytest {args:tests}"
 description = "Environment for benchmarking"
 dependencies = [
     "click",
+    "jupyter",
     "matplotlib",
+    "nbqa",
+    "pandas",
+    "pyarrow",
     "pympler",
+    "seaborn",
 ]
 
 [tool.hatch.envs.dask]
