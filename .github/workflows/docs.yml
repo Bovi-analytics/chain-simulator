@@ -37,7 +37,7 @@ jobs:
 
       - name: Build with Sphinx
         run: |
-          cp ${{ github.workspace }}/docs/source /tmp/chain_simulator_pages/source
+          cp -r ${{ github.workspace }}/docs/source /tmp/chain_simulator_pages/source
           hatch run docs:api /tmp/chain_simulator_pages/source/generated ${{ github.workspace }}/src/chain_simulator
           hatch run docs:build /tmp/chain_simulator_pages/source /tmp/chain_simulator_pages/build
 
