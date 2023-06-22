@@ -35,6 +35,9 @@ jobs:
           pip install hatch
           hatch env create docs
 
+      - name: Build folder structure
+        run: mkdir -p /tmp/chain_simulator_pages/source
+
       - name: Build with Sphinx
         run: |
           cp -r ${{ github.workspace }}/docs/source /tmp/chain_simulator_pages/source
