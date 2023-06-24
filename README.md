@@ -1,6 +1,8 @@
 Chain simulator
 ===============
 
+![Tests](https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/actions/workflows/tests.yml/badge.svg)
+![Docs](https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/actions/workflows/docs.yml/badge.svg)
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ----
@@ -71,4 +73,4 @@ tox.ini = "Configuration for Tox to run tests on multiple Python versions"
 
 ------------------------
 Author: Max Nollet  
-Last updated: 01-05-2023
+Last updated: 22-06-2023

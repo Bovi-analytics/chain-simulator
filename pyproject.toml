@@ -131,13 +131,9 @@ dependencies = [
     "towncrier>=22.12.0",
 ]
 [tool.hatch.envs.docs.scripts]
-api = "sphinx-apidoc -f -e -M -T -o docs/source/generated/ src/chain_simulator/"
+api = "sphinx-apidoc -f -e -M -o {args:docs/source/generated/} {args:src/chain_simulator/}"
 autobuild = "sphinx-autobuild docs/source/ docs/build/html"
-build = [
-    "api",
-    "test",
-    "sphinx-build -b html docs/source/ docs/build/html"
-]
+build = "sphinx-build -b html {args:docs/source/} {args:docs/build/html}"
 test = "sphinx-build -b doctest docs/source/ docs/build/html"
 
 
