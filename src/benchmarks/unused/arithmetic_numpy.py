@@ -11,7 +11,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-from benchmarks.abstract import _T, AbstractArrayInfo, csv_writer, timert
+from benchmarks.unused.abstract import _T, AbstractArrayInfo, csv_writer
 
 
 class ArrayInfo(AbstractArrayInfo[NDArray[Any]]):

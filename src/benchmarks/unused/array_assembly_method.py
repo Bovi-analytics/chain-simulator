@@ -5,8 +5,8 @@ from typing import Callable, Iterable, Optional, TypeVar
 
 import numpy as np
 
-from benchmarks.abstract import csv_writer
-from benchmarks.tools import scipy_coo_array_info, scipy_cs_array_info
+from benchmarks.unused.abstract import csv_writer
+from benchmarks.unused.tools import scipy_coo_array_info, scipy_cs_array_info
 
 
 def array_setup(array_type: str, axis_size: int, cells_to_fill: int) -> str:

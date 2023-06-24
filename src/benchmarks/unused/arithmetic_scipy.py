@@ -1,11 +1,9 @@
-from timeit import Timer
-
 from numpy import arange, dtype
 from numpy.random import default_rng
-from scipy.sparse import csr_array, random, bsr_array
+from scipy.sparse import csr_array, random
 from typing_extensions import Self
 
-from benchmarks.abstract import AbstractArrayInfo, _T, csv_writer, timert
+from benchmarks.unused.abstract import AbstractArrayInfo, csv_writer, timert
 
 
 class CSRArrayInfo(AbstractArrayInfo[csr_array]):

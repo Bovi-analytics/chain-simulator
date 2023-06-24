@@ -1,4 +1,4 @@
-from benchmarks.array_assembly_method import name_timings
+from benchmarks.unused.array_assembly_method import name_timings
 
 
 class TestNameTimings:

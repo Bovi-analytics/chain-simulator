@@ -10,7 +10,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-from benchmarks.abstract import AbstractArrayInfo, csv_writer
+from benchmarks.unused.abstract import AbstractArrayInfo, csv_writer
 
 
 class CSRArrayInfo(AbstractArrayInfo[csr_array]):
