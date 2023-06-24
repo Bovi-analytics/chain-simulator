@@ -7,6 +7,35 @@ version bump will happen once the library is out of early development stages.
 
 .. towncrier release notes start
 
+0.3.2 (2023-06-24)
+==================
+
+Features
+--------
+
+- Added mechanism for processing state vectors using callbacks. (`#27
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/27>`_)
+- Made parameter `step_size` available for callback functions. (`#28
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/28>`_)
+
+
+Improved Documentation
+----------------------
+
+- Added documentation to `simulation` module. (`#11
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/11>`_)
+- Added usage example to `array_assembler`. (`#12
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/12>`_)
+- Added documentation to `utilities` module. (`#14
+  <https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues/14>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Removed deprecated utility function `validate_matrix_positive`.
+
+
 0.3.1 (2023-05-23)
 ==================
 
