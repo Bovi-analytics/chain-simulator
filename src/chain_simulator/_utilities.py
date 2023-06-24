@@ -25,18 +25,22 @@ _logger = logging.getLogger(__name__)
 
 
 class TransitionMatrixWarning(Warning):
+    """Something is wrong with the transition matrix."""
     pass
 
 
 class TransitionMatrixSumWarning(TransitionMatrixWarning):
+    """Not all rows in a transition matrix sum to 1."""
     pass
 
 
 class TransitionMatrixNegativeWarning(TransitionMatrixWarning):
+    """Some probabilities in a transition matrix are negative."""
     pass
 
 
 class NoCallbackWarning(Warning):
+    """There are no callback functions provided."""
     pass
 
 
@@ -193,10 +197,12 @@ def validate_matrix_negative(transition_matrix: _T) -> bool:
 
 
 class CallbackError(Exception):
+    """Something went wrong inside a callback function."""
     pass
 
 
 class AccumulationError(Exception):
+    """Something went wrong while accumulating callback values."""
     pass
 
 
