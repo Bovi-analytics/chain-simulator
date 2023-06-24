@@ -1,17 +1,14 @@
-from __future__ import annotations
-
-from datetime import datetime
-from math import floor
+from dataclasses import dataclass
+from json import dumps
 from pathlib import Path
 from textwrap import dedent
 from timeit import Timer
-from typing import Dict, Generator, List
-from dataclasses import dataclass, asdict
-from json import dumps
-from operator import mul
+from typing import Generator, List
 
-from numpy import asarray, divmod
-from numpy.random import default_rng
+from cupyx.profiler import benchmark
+from cupyx.profiler._time import _PerfCaseResult
+from cupyx.scipy import sparse as cupy_sparse
+from numpy import asarray
 from pandas import DataFrame
 from scipy import sparse as scipy_sparse
 
@@ -19,38 +16,16 @@ from scipy import sparse as scipy_sparse
 @dataclass
 class ConversionMetadata:
     title: str
-    run_date: str
     number_of_repeats: int
-    number_of_runs: int
+    number_of_warmups: int
     conversions: List[str]
     matrix_shape: List[int]
     nonzero_cells: int
 
 
-def prepare_array(axis_size: int, cells_to_fill: int, data_type: str):
-    rng = default_rng(1)
-
-    axis_size = axis_size
-    cells_to_fill = cells_to_fill
-    if cells_to_fill:
-        array_size = int(pow(axis_size, 2))
-        cells = rng.choice(array_size, size=cells_to_fill, replace=False)
-        rows, cols = divmod(cells, axis_size)
-        data = rng.random(cells_to_fill)
-    else:
-        rows, cols, data = [], [], []
-    return scipy_sparse.coo_array((data, (rows, cols)),
-                                  shape=(axis_size, axis_size),
-                                  dtype=data_type)
-
-
 def scipy_converter(
-        # shape_m: int,
-        # shape_n: int,
-        # cells_to_fill: float,
+        npz_file: Path,
         source_format: str,
-        # data_type: str
-        matrix_path: Path | str
 ) -> Generator[Timer, str, None]:
     formats = {
         "bsr": "bsr_array",
@@ -61,76 +36,51 @@ def scipy_converter(
         "dok": "dok_array",
         "lil": "lil_array"
     }
-    # setup = dedent("""
-    #     from __main__ import prepare_array
-    #     from scipy.sparse import random, %s, %s
-    #
-    #     initial_array = %s(prepare_array(%d, %d, '%s'))
-    # """).strip()
-    # stmt = "converted_array = %s(initial_array)"
     setup = dedent("""
         from scipy.sparse import load_npz, %s, %s
-        
-        matrix_source = %s(load_npz(r'%s'))
+
+        initial_array = %s(load_npz(r'%s'))
     """).strip()
-    stmt = "matrix_target = %s(matrix_source)"
+    stmt = "converted_array = %s(initial_array)"
     source_format = formats.get(source_format)
     timer = None
     while True:
         target_format = yield timer
         if converter := formats.get(target_format):
             timer = Timer(
-                # setup=setup % (
-                #     source_format, converter, source_format, shape_m,
-                #     cells_to_fill, data_type
-                # ),
-                # stmt=stmt % (converter,),
-                setup=setup % (converter, source_format, source_format, matrix_path),
-                stmt=stmt % converter
+                setup=setup % (
+                    source_format, converter, source_format, npz_file,
+                ),
+                stmt=stmt % (converter,),
             )
         else:
             timer = None
 
 
-# def cupy_converter(
-#         shape_m: int,
-#         shape_n: int,
-#         cells_to_fill: float,
-#         source_format: str,
-#         data_type: str
-# ) -> Generator[Timer, str, None]:
-#     formats = {
-#         "coo": "coo_matrix",
-#         "csc": "csc_matrix",
-#         "csr": "csr_matrix",
-#         "dia": "dia_matrix",
-#     }
-#     setup = dedent("""
-#         from __main__ import prepare_array
-#         from scipy.sparse import random, %s, %s
-#         from cupyx.scipy.sparse import %s
-#
-#         initial_array = %s(%s(prepare_array(%d, %d, '%s')))
-#     """).strip()
-#     stmt = "converted_array = %s(initial_array)"
-#     cells_to_fill = floor(((shape_m * shape_n) / 100) * cells_to_fill)
-#     source_format = formats.get(source_format)
-#     timer = None
-#     while True:
-#         target_format = yield timer
-#         if converter := formats.get(target_format):
-#             timer = Timer(
-#                 setup=setup % (
-#                     source_format, converter, source_format, shape_m,
-#                     cells_to_fill, data_type
-#                 ),
-#                 stmt=stmt % (converter,),
-#             )
-#         else:
-#             timer = None
+def cupy_converter(
+        source_format: str,
+        matrix,
+        n_warmup: int,
+        n_repeats: int,
+) -> Generator[_PerfCaseResult, str, None]:
+    formats = {
+        "coo": cupy_sparse.coo_matrix,
+        "csc": cupy_sparse.csc_matrix,
+        "csr": cupy_sparse.csr_matrix,
+        # "dia": cupy_sparse.dia_matrix,
+    }
+    source_format = formats.get(source_format)
+    source = source_format(matrix)
+    timer = None
+    while True:
+        target_format = yield timer
+        if converter := formats.get(target_format):
+            timer = benchmark(converter, (source.copy(),), n_warmup=n_warmup, n_repeat=n_repeats)
+        else:
+            timer = None
 
 
-def collector(
+def scipy_collector(
         converter: Generator[Timer, str, None],
         formats: List[str],
         repeat: int,
@@ -143,44 +93,74 @@ def collector(
     return all_timings
 
 
-def main():
-    repeat = 10
-    number = 1_000
-    all_formats = ["bsr", "coo", "csc", "csr"]
-    # matrix_shape = [100_000, 100_000]
-    # nonzero_cells = floor(mul(*matrix_shape) / 100 * 0.01)
-    path = Path(r"C:\Users\Maxximiser\Downloads\tm_reincarnation.npz")
-    matrix = scipy_sparse.load_npz(path)
-    # nonzero_cells = 1000000
+def cupy_collector(
+        converter: Generator[_PerfCaseResult, str, None],
+        formats: List[str],
+):
+    cpu_timings = {}
+    gpu_timings = {}
+    for target_format in formats:
+        timer = converter.send(target_format)
+        # timings = {
+        #     "cpu_times": timer.cpu_times,
+        #     "gpu_times": timer.gpu_times
+        # }
+        cpu_timings[target_format] = timer.cpu_times
+        gpu_timings[target_format] = timer.gpu_times[0]
+    return DataFrame(cpu_timings), DataFrame(gpu_timings)
 
-    metadata = ConversionMetadata(
-        title="SciPy sparse format conversions",
-        run_date=datetime.now().isoformat(),
-        number_of_repeats=repeat,
-        number_of_runs=number,
-        conversions=all_formats,
-        matrix_shape=matrix.shape,
-        nonzero_cells=matrix.count_nonzero()
-    )
 
-    out_path = Path.cwd() / Path("scipy_reinc")
+def benchmark_scipy(npz_file: Path, out_path: Path, number: int, repeat: int, all_formats):
+    metadata = {
+        "number_of_repeats": repeat,
+        "number_of_runs": number,
+    }
+
+    out_path = out_path / Path(npz_file.stem) / Path("scipy_timings")
     if not out_path.exists():
-        out_path.mkdir()
+        out_path.mkdir(parents=True)
 
     with (out_path / "metadata.json").open("w", encoding="utf-8") as file:
-        file.write(dumps(asdict(metadata), indent=4))
+        file.write(dumps(metadata, indent=4))
 
     for source_format in all_formats:
-        scipy_gen = scipy_converter(source_format, path)
+        scipy_gen = scipy_converter(npz_file, source_format)
         next(scipy_gen)
-        results = DataFrame(
-            collector(scipy_gen, all_formats, repeat=repeat, number=number)
-        )
-        results.to_parquet(out_path / f"{source_format}.parquet")
+        timings = DataFrame(scipy_collector(scipy_gen, all_formats, repeat, number))
+        timings.to_parquet(out_path / f"{source_format}.parquet")
         scipy_gen.close()
 
-    # TODO: Convert input matrix to right format!
+
+def benchmark_cupy(npz_file: Path, out_path: Path, warmup: int, repeat: int, all_formats):
+    matrix = scipy_sparse.load_npz(npz_file)
+    cupy_matrix = cupy_sparse.coo_matrix(matrix)
+
+    metadata = {
+        "number_of_repeats": repeat,
+        "number_of_warmups": warmup,
+    }
+
+    out_path = out_path / Path(npz_file.stem) / Path("cupy_timings")
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
+
+    with (out_path / "metadata.json").open("w", encoding="utf-8") as file:
+        file.write(dumps(metadata, indent=4))
+
+    for source_format in all_formats:
+        cupy_gen = cupy_converter(source_format, cupy_matrix, n_warmup=warmup, n_repeats=repeat)
+        next(cupy_gen)
+        cpu_timings, gpu_timings = cupy_collector(cupy_gen, all_formats)
+        cpu_timings.to_parquet(out_path / f"{source_format}_cpu.parquet")
+        gpu_timings.to_parquet(out_path / f"{source_format}_gpu.parquet")
+        cupy_gen.close()
 
 
 if __name__ == "__main__":
-    main()
+    pass
+    f = Path(
+        r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\tm_reincarnation.npz")
+    o = Path(
+        r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\conversion_times")
+    # benchmark_scipy(f, o, 200, 10, ["bsr", "coo", "csc", "csr"])
+    benchmark_cupy(f, o, 10, 10_000, ["coo", "csc", "csr"])
