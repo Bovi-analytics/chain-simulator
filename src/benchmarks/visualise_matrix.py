@@ -13,7 +13,7 @@ def main(*input: str, output: str):
         matrix = scipy.sparse.load_npz(file)
 
 
-def vis():
+def vis(npz_file: Path, output_path: Path, n: int):
     input_files = [
         Path(r"C:\Users\Maxximiser\Downloads\tm_no_reincarnation.npz"),
         # Path(r"C:\Users\Maxximiser\Downloads\tm_reincarnation.npz")
@@ -54,6 +54,5 @@ def plot_increment(transition_matrix: scipy.sparse.csr_array, start: int, end: i
 
 
 if __name__ == "__main__":
-    # main()
     vis()
 

@@ -52,6 +52,7 @@ test-cov = "coverage run -m pytest {args:tests}"
 
 [tool.hatch.envs.benchmark]
 description = "Environment for benchmarking"
+python = "3.11"
 dependencies = [
     "click",
     "jupyter",
@@ -62,6 +63,7 @@ dependencies = [
     "pympler",
     "seaborn",
 ]
+features = ["gpu"]
 
 [tool.hatch.envs.dask]
 description = "Development environment for Dask support"

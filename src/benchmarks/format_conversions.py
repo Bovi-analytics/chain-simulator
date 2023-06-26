@@ -46,6 +46,7 @@ def scipy_converter(
     timer = None
     while True:
         target_format = yield timer
+        print(f"To {target_format}")
         if converter := formats.get(target_format):
             timer = Timer(
                 setup=setup % (
@@ -124,6 +125,7 @@ def benchmark_scipy(npz_file: Path, out_path: Path, number: int, repeat: int, al
         file.write(dumps(metadata, indent=4))
 
     for source_format in all_formats:
+        print(f"Converting from {source_format}")
         scipy_gen = scipy_converter(npz_file, source_format)
         next(scipy_gen)
         timings = DataFrame(scipy_collector(scipy_gen, all_formats, repeat, number))
@@ -157,10 +159,61 @@ def benchmark_cupy(npz_file: Path, out_path: Path, warmup: int, repeat: int, all
 
 
 if __name__ == "__main__":
-    pass
-    f = Path(
-        r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\tm_reincarnation.npz")
-    o = Path(
-        r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\conversion_times")
+    base_input_path = Path("docs/source/benchmarks/data")
+    base_output_path = base_input_path / "format_conversions"
+    path_matrices = base_input_path / "Matrices"
+
+    # Define paths to all matrices to test.
+    random_tiny = path_matrices / "random_matrix_tiny.npz"
+    random_small = path_matrices / "random_matrix_small.npz"
+    random_medium = path_matrices / "random_matrix_medium.npz"
+    random_large = path_matrices / "random_matrix_large.npz"
+    with_reincarnation = path_matrices / "tm_with_reincarnation.npz"
+    without_reincarnation = path_matrices / "tm_without_reincarnation.npz"
+
+    # Run SciPy benchmarks
+    # benchmark_scipy(
+    #     random_tiny, base_output_path, 2_000, 10,
+    #     ["bsr", "coo", "csc", "csr", "dia", "dok", "lil"]
+    # )
+    # benchmark_scipy(
+    #     random_small, base_output_path, 500, 10,
+    #     ["bsr", "coo", "csc", "csr", "dia", "dok", "lil"]
+    # )
+
+    # benchmark_scipy(
+    #     random_medium, base_output_path, 1_000, 10,
+    #     ["bsr", "coo", "csc", "csr"]
+    # )  # dia format requires 54.7 GiB of memory
+    # benchmark_scipy(
+    #     random_large, base_output_path, 200, 10,
+    #     ["bsr", "coo", "csc", "csr"]
+    # )
+    # benchmark_scipy(
+    #     with_reincarnation, base_output_path, 100, 10,
+    #     ["bsr", "coo", "csc", "csr"]
+    # )
+    # benchmark_scipy(
+    #     with_reincarnation, base_output_path, 100, 10,
+    #     ["bsr", "coo", "csc", "csr"]
+    # )
+
+    # Run CuPy benchmarks
+    # benchmark_cupy(
+    #     random_tiny, base_output_path, 10, 10_000, ["coo", "csc", "csr"]
+    # )
+    benchmark_cupy(
+        random_small, base_output_path, 10, 2_500, ["coo", "csc", "csr"]
+    )
+
+
+    # benchmark_cupy(
+    #     random_small, base_output_path, 10, 10_000, ["coo", "csc", "csr"]
+    # )
+
+    # f = Path(
+    #     r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\tm_reincarnation.npz")
+    # o = Path(
+    #     r"C:\Users\Maxximiser\Documents\Software projects\Python projects\Intern Utrecht\simulation_platform\conversion_times")
     # benchmark_scipy(f, o, 200, 10, ["bsr", "coo", "csc", "csr"])
-    benchmark_cupy(f, o, 10, 10_000, ["coo", "csc", "csr"])
+    # benchmark_cupy(f, o, 10, 10_000, ["coo", "csc", "csr"])
