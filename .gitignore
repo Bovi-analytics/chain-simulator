@@ -745,3 +745,6 @@ FodyWeavers.xsd
 
 # Generated API documentation.
 /docs/source/generated/
+
+# Images from benchmarking results
+/docs/source/benchmarks/*.svg

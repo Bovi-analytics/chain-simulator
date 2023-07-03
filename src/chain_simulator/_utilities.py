@@ -407,11 +407,14 @@ def simulation_accumulator(
     return accumulated_values
 
 
-def _plot_coo_matrix(m):
+def _plot_coo_matrix(m, name: str, n: int):
     "https://stackoverflow.com/questions/22961541/python-matplotlib-plot-sparse-matrix-pattern"
     from matplotlib import pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111, facecolor='white')
+    from decimal import Decimal
+    density = 100 / (m.shape[0] * m.shape[1]) * m.nnz
+    fig = plt.figure(figsize=(5.5, 5.5))
+    ax = fig.add_subplot(111, facecolor='white', frameon=False)
+    # f, ax = plt.subplots(111, figsize=(5.5, 4.5), facecolor='white')
     ax.plot(m.col, m.row, 's', color='black', ms=1)
     ax.set_xlim(0, m.shape[1])
     ax.set_ylim(0, m.shape[0])
@@ -420,6 +423,7 @@ def _plot_coo_matrix(m):
         spine.set_visible(False)
     ax.invert_yaxis()
     ax.set_aspect('equal')
+    ax.set_title(f"{name} (n={n}, density={density:.2})")
     ax.set_xticks([])
     ax.set_yticks([])
     return fig, ax
