@@ -8,10 +8,10 @@ from typing import Any, Callable, Generic, Iterable, Tuple, TypeVar
 from numpy import dtype
 from numpy.typing import DTypeLike
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+# if sys.version_info >= (3, 11):
+#     from typing import Self
+# else:
+#     from typing_extensions import Self
 
 _T = TypeVar("_T")
 
@@ -19,32 +19,32 @@ _T = TypeVar("_T")
 class AbstractArrayInfo(ABC, Generic[_T]):
     @classmethod
     @abstractmethod
-    def shape(cls: Self, array: _T) -> Tuple[int, ...]:
+    def shape(cls: "Self", array: _T) -> Tuple[int, ...]:
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def size(cls: Self, array: _T) -> int:
+    def size(cls: "Self", array: _T) -> int:
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def nbytes(cls: Self, array: _T) -> int:
+    def nbytes(cls: "Self", array: _T) -> int:
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def itemsize(cls: Self, array: _T) -> int:
+    def itemsize(cls: "Self", array: _T) -> int:
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def dtype(cls: Self, array: _T) -> dtype:
+    def dtype(cls: "Self", array: _T) -> dtype:
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def count_nonzero(cls: Self, array: _T) -> int:
+    def count_nonzero(cls: "Self", array: _T) -> int:
         raise NotImplementedError
 
     @classmethod
