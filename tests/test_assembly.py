@@ -1,8 +1,10 @@
 """Tests for module :mod:`~chain_simulator.implementations`."""
+
 from typing import Iterator, Tuple
 
-from chain_simulator._assembly import array_assembler
 from scipy.sparse import coo_array
+
+from chain_simulator._assembly import array_assembler
 
 
 def dummy_probability_generator() -> Iterator[Tuple[int, int, float]]:

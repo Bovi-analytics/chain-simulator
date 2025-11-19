@@ -4,13 +4,14 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 from _pytest.logging import LogCaptureFixture
+from scipy.sparse import coo_array, csc_array, csr_array
+
 from chain_simulator._utilities import (
     TransitionMatrixNegativeWarning,
     TransitionMatrixSumWarning,
     validate_matrix_negative,
     validate_matrix_sum,
 )
-from scipy.sparse import coo_array, csc_array, csr_array
 
 TestingArray = npt.NDArray[np.int32]
 

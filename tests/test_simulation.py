@@ -1,5 +1,5 @@
 """Tests for module :mod:`~_simulation`."""
-from functools import partial
+
 from itertools import zip_longest
 
 import numpy as np
@@ -293,8 +293,6 @@ class TestChainSimulator:
 class TestStateVectorProcessorNumPy:
     """Tests for vector_processor_numpy."""
 
-    partial_processor = partial(vector_processor_numpy, steps=3)
-
     numpy_initial_vector = np.array([1, 0, 0])
     numpy_matrix = np.array(
         [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
@@ -305,14 +303,13 @@ class TestStateVectorProcessorNumPy:
     @pytest.mark.parametrize("vec_initial, matrix", numpy_formats)
     def test_supported_type(self, vec_initial, matrix):
         """Test supported input/output types."""
-        results = next(self.partial_processor(vec_initial, matrix))
+        results = next(vector_processor_numpy(vec_initial, matrix, steps=3))
         assert isinstance(results[0], np.ndarray)
 
 
 class TestStateVectorProcessorSciPy:
     """Tests for vector_processor_scipy."""
 
-    partial_processor = partial(vector_processor_scipy, steps=3)
     numpy_initial_vector = np.array([1, 0, 0])
     numpy_matrix = np.array(
         [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
@@ -328,7 +325,7 @@ class TestStateVectorProcessorSciPy:
     @pytest.mark.parametrize("vec_initial, matrix", scipy_formats)
     def test_scipy_supported_type(self, vec_initial, matrix):
         """Test supported input/output types."""
-        results = next(self.partial_processor(vec_initial, matrix))
+        results = next(vector_processor_scipy(vec_initial, matrix, steps=3))
         assert isinstance(results[0], np.ndarray)
 
 
@@ -358,7 +355,6 @@ def as_cupyx_csr_matrix(array):
 class TestStateVectorProcessorCuPy:
     """Tests for vector_processor_cupy."""
 
-    partial_processor = partial(vector_processor_cupy, steps=3)
     numpy_initial_vector = np.array([1, 0, 0])
     numpy_matrix = np.array(
         [[0.0, 1.0, 0.0], [0.0, 0.5, 0.5], [0.0, 0.0, 1.0]]
@@ -385,18 +381,12 @@ class TestStateVectorProcessorCuPy:
     @pytest.mark.parametrize("vec_initial, matrix", cupy_formats)
     def test_cupy_supported_type(self, vec_initial, matrix):
         """Test supported input/output types."""
-        results = next(self.partial_processor(vec_initial, matrix))
+        results = next(vector_processor_cupy(vec_initial, matrix, steps=3))
         assert isinstance(results[0], _cupy.ndarray)
 
 
 class TestStateVectorProcessor:
     """Tests fo vector_processor."""
-
-    processor_final = partial(state_vector_processor, steps=3)
-    processor_intermediate_all = partial(processor_final, steps=3, interval=1)
-    processor_intermediate_second = partial(
-        processor_final, steps=3, interval=2
-    )
 
     numpy_initial_vector = np.array([1, 0, 0])
     numpy_matrix = np.array(
@@ -480,18 +470,20 @@ class TestStateVectorProcessor:
     @pytest.mark.parametrize("vector, matrix", valid_combinations)
     def test_output_type(self, vector, matrix):
         """Test output type with valid inputs."""
-        results = next(self.processor_final(vector, matrix))
+        results = next(state_vector_processor(vector, matrix, steps=3))
         assert isinstance(results[0], np.ndarray)
         assert isinstance(results[1], int)
 
     @pytest.mark.parametrize("vector, matrix", valid_combinations)
     def test_output_no_intermediate(self, vector, matrix):
         """Test output with no intermediate state vectors."""
-        results = tuple(self.processor_final(vector, matrix))
+        results = tuple(state_vector_processor(vector, matrix, steps=3))
         assert len(results) == 1
 
     @pytest.mark.parametrize("vector, matrix", valid_combinations)
     def test_output_all_intermediate(self, vector, matrix):
         """Test output with all intermediate state vectors."""
-        results = tuple(self.processor_intermediate_all(vector, matrix))
+        results = tuple(
+            state_vector_processor(vector, matrix, steps=3, interval=1)
+        )
         assert len(results) == 3
