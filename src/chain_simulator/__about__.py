@@ -1,2 +1,5 @@
 """Version of the library."""
-__version__ = "0.3.2"
+
+from importlib.metadata import version
+
+__version__ = version("chain-simulator")

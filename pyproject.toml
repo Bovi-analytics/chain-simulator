@@ -1,132 +1,51 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "chain-simulator"
-dynamic = ["version"]
-description = "Generic, highly scalable platform for simulating digital twins using Markov chains."
-readme = "README.md"
-requires-python = ">=3.8"
-keywords = []
+version = "0.3.3"
 authors = [
-    { name = "Max Nollet", email = "mjh.nollet@student.han.nl" },
+    { name = "Max Nollet", email = "mjh.nollet@student.han.nl" }
 ]
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = ["scipy>=1.10"]
-
-[project.optional-dependencies]
-gpu = ["cupy-cuda12x"]
+dependencies = [
+    "scipy>=1.10",
+]
 
 [project.urls]
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
 Source = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
 
-[tool.hatch.version]
-path = "src/chain_simulator/__about__.py"
-
-[tool.hatch.envs.default]
-description = "Default development environment"
-dependencies = [
-    "coverage[toml]>=6.5",
-    "pytest",
-]
-[tool.hatch.envs.default.scripts]
-cov = [
-    "test-cov",
-    "cov-report",
-]
-cov-report = [
-    "- coverage combine",
-    "coverage report",
-]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-
-[tool.hatch.envs.dask]
-description = "Development environment for Dask support"
-dependencies = [
-    "dask",
-    "dask-labextension",
-    "dask[diagnostics]",
-    "graphviz",
-    "jupyterlab",
-]
-
-[tool.hatch.envs.gpu]
-description = "Development environment for GPU support"
-features = ["gpu"]
-
-[tool.hatch.envs.spark]
-description = "Development environment for Apache Spark support"
-dependencies = ["pyspark>=3.4.0"]
-
-[tool.hatch.envs.tensorflow]
-description = "Development environment for TensorFlow support"
-dependencies = ["tensorflow>=2.12"]
-
-[tool.hatch.envs.tensorflow-directml]
-description = "Development environment for TenforFlow=DirectML"
-dependencies = [
-    "tensorflow-cpu>=2.12",
-    "tensorflow-directml-plugin",
-]
-
-[[tool.hatch.envs.all.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11"]
-
-[tool.hatch.envs.lint]
-description = "Environment for formatting code and static type checking"
-dependencies = [
-    "black>=23.1.0",
-    "docformatter>=1.5",
-    "mypy>=1.0.0",
-    "pylint>=2.17",
-    "ruff>=0.0.243",
-]
-[tool.hatch.envs.lint.scripts]
-all = [
-    "typing",
-    "style",
-]
-fmt = [
-    "black {args:.}",
-    "docformatter --in-place --recursive {args:src/chain_simulator tests}",
-    "ruff --fix {args:src/chain_simulator tests}",
-]
-style = [
-    "ruff {args:src/chain_simulator tests}",
-    "pylint {args:src/chain_simulator}",
-]
-typing = "mypy --install-types --non-interactive {args:src/chain_simulator}"
-
-[tool.hatch.envs.docs]
-description = "Environment for writing documentation using Sphinx"
-dependencies = [
-    "furo>=2023.0",
-    "numpydoc>=1.5.0",
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.6.1",
+    "docformatter>=1.7.6",
+    "furo>=2024.8.6",
+    "mypy>=1.14.1",
+    "numpydoc>=1.7.0",
+    "pylint>=3.2.7",
+    "pytest>=8.3.5",
+    "ruff>=0.14.5",
+    "sphinx>=7.1.2",
     "sphinx-autobuild>=2021.3.14",
-    "sphinx-copybutton>=0.5.1",
-    "sphinx>=6.1",
-    "towncrier>=22.12.0",
+    "sphinx-copybutton>=0.5.2",
+    "towncrier>=24.8.0",
 ]
-[tool.hatch.envs.docs.scripts]
-api = "sphinx-apidoc -f -e -M -o {args:docs/source/generated/} {args:src/chain_simulator/}"
-autobuild = "sphinx-autobuild docs/source/ docs/build/html"
-build = "sphinx-build -b html {args:docs/source/} {args:docs/build/html}"
-test = "sphinx-build -b doctest docs/source/ docs/build/html"
-
-
-[tool.black]
-line-length = 79
-target-version = ["py38"]
+gpu = [
+    "cupy-cuda12x>=12.3.0",
+]
 
 
 [tool.mypy]
@@ -137,40 +56,12 @@ module = ["cupy.*", "cupyx.*", "scipy.*", "pytest.*", "_pytest.*"]
 ignore_missing_imports = true
 
 
-[tool.pylint.MASTER]
-disable = ["wrong-import-order"]
-load-plugins = [
-    "pylint.extensions.bad_builtin",
-    "pylint.extensions.broad_try_clause",
-    "pylint.extensions.check_elif",
-    "pylint.extensions.code_style",
-    "pylint.extensions.comparetozero",
-    "pylint.extensions.comparison_placement",
-    "pylint.extensions.confusing_elif",
-    "pylint.extensions.consider_ternary_expression",
-    "pylint.extensions.docparams",
-    "pylint.extensions.docstyle",
-    "pylint.extensions.empty_comment",
-    "pylint.extensions.emptystring",
-    "pylint.extensions.eq_without_hash",
-    "pylint.extensions.for_any_all",
-    "pylint.extensions.mccabe",
-    "pylint.extensions.overlapping_exceptions",
-    "pylint.extensions.private_import",
-    "pylint.extensions.redefined_variable_type",
-    "pylint.extensions.set_membership",
-    "pylint.extensions.while_used",
-]
-max-complexity = 10
-accept-no-param-doc = false
-accept-no-raise-doc = false
-accept-no-return-doc = false
-# Problem with pylint not detecting yield in NumPy style
-accept-no-yields-doc = true
-default-docstring-type = "numpy"
-
-
 [tool.ruff]
+line-length = 79
+show-fixes = true
+target-version = "py38"
+
+[tool.ruff.lint]
 extend-select = [
     "B",
     "BLE",
@@ -194,24 +85,16 @@ extend-select = [
     "S",
     "SIM",
     "T20",
-    "TCH",
     "TID",
     "YTT",
 ]
-line-length = 79
-show-fixes = true
-target-version = "py38"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "test_*.py" = ["S101"]
-
-
-[tool.bandit]
-exclude_dirs = ["tests"]
 
 
 [tool.towncrier]
