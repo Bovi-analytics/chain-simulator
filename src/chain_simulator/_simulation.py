@@ -305,9 +305,10 @@ def _valid_numpy_dot_type(state_vector, transition_matrix) -> "bool":
 
 def _valid_scipy_dot_type(state_vector, transition_matrix) -> "bool":
     if isinstance(state_vector, np.ndarray):
-        if scipy.sparse.isspmatrix_csc(
-            transition_matrix
-        ) or scipy.sparse.isspmatrix_csr(transition_matrix):
+        if isinstance(
+            transition_matrix, (sparse.csc_array, sparse.csc_matrix)
+        ) or isinstance(
+            transition_matrix, (sparse.csr_array, sparse.csr_matrix)):
             return True
         raise TypeError(
             "`transition_matrix` should be of type "
@@ -574,9 +575,7 @@ def vector_processor_scipy(
     # Multiply state vector with transition matrix for new state vector.
     simulator = chain_simulator(transition_matrix, steps, interval)
     for progressed_matrix, current_step in simulator:
-        yield sparse.spmatrix.dot(
-            state_vector, progressed_matrix
-        ), current_step
+        yield state_vector @ progressed_matrix, current_step
 
 
 def vector_processor_cupy(
@@ -839,9 +838,9 @@ def state_vector_processor(
             steps=steps,
             interval=interval,
         )
-        if sparse.isspmatrix_csc(transition_matrix):
+        if isinstance(transition_matrix, (sparse.csc_array, sparse.csc_matrix)):
             simulator = partial_simulator(dot_method=DotMethod.SCIPY_CSC)
-        elif sparse.isspmatrix_csr(transition_matrix):
+        elif isinstance(transition_matrix, (sparse.csr_array, sparse.csr_matrix)):
             simulator = partial_simulator(dot_method=DotMethod.SCIPY_CSR)
     else:
         simulator = vector_processor(
