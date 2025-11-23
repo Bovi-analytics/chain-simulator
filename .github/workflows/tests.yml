@@ -29,6 +29,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
     - uses: wntrblm/nox@2025.11.12
     - run: nox -s "${{ matrix.session }}"
 
