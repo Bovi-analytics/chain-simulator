@@ -28,23 +28,29 @@ dependencies = [
 Issues = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform/issues"
 Source = "https://github.com/Bovi-analytics/DigitalCowSimulationPlatform"
 
+[project.optional-dependencies]
+gpu = [
+    "cupy-cuda12x>=12.3.0",
+]
+
 [dependency-groups]
 dev = [
-    "coverage[toml]>=7.6.1",
     "docformatter>=1.7.6",
-    "furo>=2024.8.6",
     "mypy>=1.14.1",
-    "numpydoc>=1.7.0",
     "pylint>=3.2.7",
-    "pytest>=8.3.5",
     "ruff>=0.14.5",
+    "towncrier>=24.8.0",
+]
+docs = [
+    "furo>=2024.8.6",
+    "numpydoc>=1.7.0",
     "sphinx>=7.1.2",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.2",
-    "towncrier>=24.8.0",
 ]
-gpu = [
-    "cupy-cuda12x>=12.3.0",
+tests = [
+    "coverage[toml]>=7.6.1",
+    "pytest>=8.3.5",
 ]
 
 

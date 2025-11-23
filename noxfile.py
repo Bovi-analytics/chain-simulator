@@ -11,6 +11,8 @@ def tests(session: nox.Session) -> None:
         "uv",
         "sync",
         "--locked",
+        "--group=tests",
+        "--no-default-groups",
         "--quiet",
         f"--python={session.virtualenv.location}",
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
