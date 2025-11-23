@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Chain simulator"
-copyright = "2023, Max Nollet"
+copyright = "2025, Max Nollet"
 author = "Max Nollet"
 release = "1.0.0"
 

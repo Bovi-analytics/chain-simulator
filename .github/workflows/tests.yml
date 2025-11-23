@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
   pull_request:
-    branches: [dev]
+    branches: [main]
 
 jobs:
   generate-jobs:
@@ -12,8 +12,10 @@ jobs:
     outputs:
       session: ${{ steps.set-matrix.outputs.session }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: wntrblm/nox@2025.11.12
+    - name: Check out code
+      uses: actions/checkout@v5
+    - name: Install nox
+      uses: wntrblm/nox@2025.11.12
     - id: set-matrix
       shell: bash
       run: echo session=$(nox --json -l | jq -c '[.[].session]') | tee --append $GITHUB_OUTPUT
@@ -27,9 +29,14 @@ jobs:
       matrix:
         session: ${{ fromJson(needs.generate-jobs.outputs.session) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v6
+    - name: Check out code
+      uses: actions/checkout@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
       with:
+        version: "0.9.11"
         enable-cache: true
-    - uses: wntrblm/nox@2025.11.12
-    - run: nox -s "${{ matrix.session }}"
+    - name: Install nox
+      uses: wntrblm/nox@2025.11.12
+    - name: Run tests
+      run: nox -s "${{ matrix.session }}"

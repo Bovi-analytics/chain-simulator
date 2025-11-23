@@ -7,6 +7,12 @@ version bump will happen once the library is out of early development stages.
 
 .. towncrier release notes start
 
+0.3.3 (2025-11-23)
+==================
+
+No significant changes.
+
+
 0.3.2 (2023-06-24)
 ==================
 
